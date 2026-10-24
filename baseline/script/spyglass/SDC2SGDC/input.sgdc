@@ -1,0 +1,2 @@
+current_design CHIP
+sdc_data -file ../script/spyglass/SDC2SGDC/case.sdc -file ../script/MV/SDC/DC.sdc 

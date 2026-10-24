@@ -1,0 +1,3 @@
+# Fill-in templates are tracked; keep filled local overrides separate.
+*.local.tcl
+*.local.json

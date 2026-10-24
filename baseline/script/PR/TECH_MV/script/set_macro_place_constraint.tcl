@@ -1,0 +1,9 @@
+
+create_place_halo -halo_deltas $MACRO_PLACE_HALO -all_blocks
+create_route_halo -all_blocks -space $MACRO_ROUTE_HALO_SPACE -bottom_layer $MACRO_ROUTE_HALO_BOTTOM_LAYER -top_layer $MACRO_ROUTE_HALO_TOP_LAYER
+
+set_db place_global_align_macro true
+set_macro_place_constraint -halo_sharing true
+set_macro_place_constraint -min_space_to_core $MACRO_MIN_SPACE_TO_CORE
+set_macro_place_constraint -min_space_to_macro $MACRO_MIN_SPACE_TO_MACRO
+set_macro_place_constraint -macro_corner_keepout $MACRO_CORNER_KEEPOUT

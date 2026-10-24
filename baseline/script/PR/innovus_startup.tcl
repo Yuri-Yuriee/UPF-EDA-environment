@@ -1,0 +1,5 @@
+set_multi_cpu_usage -local_cpu 32
+set_multi_cpu_usage -remote_host 6
+set_multi_cpu_usage -cpu_per_remote_host 16
+set_db read_db_stop_at_design_in_memory false
+source /FILL_IN/FILL_IN_RESOURCE_0148

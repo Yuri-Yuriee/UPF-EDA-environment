@@ -1,0 +1,181 @@
+set company "CIC"
+set designer "Student"
+set tech_option 2
+       #1     REFERENCE_PLATFORM
+       #2     TECH 
+set MV_option 1
+
+
+if {$tech_option == 1} {
+       set CoreSearchPath /FILL_IN/FILL_IN_RESOURCE_0055
+       set IOSearchPath /FILL_IN/FILL_IN_RESOURCE_0056
+       set MemoryPath ../tech/memory/sim/SRAM\ ../tech/memory/sim/data_array\ ../tech/memory/sim/tag_array
+       set DefintionPath ../include
+
+       set search_path    "$CoreSearchPath $IOSearchPath $MemoryPath $DefintionPath $search_path"
+       set target_library " FILL_IN_LIBRARY_0057 FILL_IN_LIBRARY_0058 FILL_IN_LIBRARY_0059 FILL_IN_LIBRARY_0060 SRAM_ss0p72v0p72vm40c_100a.db SRAM_ff0p88v0p88v125c_100a.db \
+                            data_array_ff0p88v0p88v125c_100a.db data_array_ss0p72v0p72vm40c_100a.db tag_array_ff0p88v0p88v125c_100a.db tag_array_ss0p72v0p72vm40c_100a.db"
+       set synthetic_library "dw_foundation.sldb"
+       set link_library   "* $target_library $synthetic_library"
+       set symbol_library    "generic_sdb"
+
+       set min_lib   "fsa0m_a_generic_core_ff1p98vm40c \
+                     FILL_IN_LIBRARY_0061 \
+                     SRAM_ff0p88v0p88v125c_100a \ 
+                     data_array_ff0p88v0p88v125c_100a \
+                     tag_array_ff0p88v0p88v125c_100a"
+
+       
+# 請填入 library 的 PVT corner 名稱
+       set min_condi FILL_IN_PVT_CORNER_29_21
+
+       set max_lib   "fsa0m_a_generic_core_ss1p62v125c \
+                     FILL_IN_LIBRARY_0062 \
+                     SRAM_ss0p72v0p72vm40c_100a \
+                     data_array_ss0p72v0p72vm40c_100a \
+                     tag_array_ss0p72v0p72vm40c_100a"
+
+       
+# 請填入 library 的 PVT corner 名稱
+       set max_condi FILL_IN_PVT_CORNER_38_21
+
+       set verilogout_no_tri true
+       set hdlin_enable_presto_for_vhdl "TRUE"
+       set sh_enable_line_editing true
+       history keep 100
+       alias h history
+
+} elseif {$tech_option == 2} {
+       set CoreSearchPath "/FILL_IN/FILL_IN_RESOURCE_0063 \
+       /FILL_IN/FILL_IN_RESOURCE_0064 \
+       /FILL_IN/FILL_IN_RESOURCE_0065 "
+
+       set IOSearchPath /FILL_IN/FILL_IN_RESOURCE_0066
+       set MemoryPath "/FILL_IN/FILL_IN_RESOURCE_0067 \
+                     /FILL_IN/FILL_IN_RESOURCE_0068 \  
+                     /FILL_IN/FILL_IN_RESOURCE_0069 "
+       set DefintionPath ../include
+       set lvPath /FILL_IN/FILL_IN_RESOURCE_0070
+       set pgPath /FILL_IN/FILL_IN_RESOURCE_0071
+
+       set PL_Path "/FILL_IN/FILL_IN_RESOURCE_0072 /FILL_IN/FILL_IN_RESOURCE_0073"
+
+       set search_path "$CoreSearchPath $IOSearchPath $MemoryPath $DefintionPath $search_path $lvPath $pgPath"
+
+       if {$PT_option == 1} {
+              set synthetic_library ""
+              set symbol_library "generic_sdb"
+       } else {
+              set synthetic_library "dw_foundation.sldb"
+       }
+
+
+       if {$MV_option == 1} {
+              set target_library "\
+              FILL_IN_LIBRARY_0074 \
+              FILL_IN_LIBRARY_0075 \
+              FILL_IN_LIBRARY_0076 \
+              FILL_IN_LIBRARY_0077 \
+              FILL_IN_LIBRARY_0078 \
+              FILL_IN_LIBRARY_0079 \
+              FILL_IN_LIBRARY_0080 \
+              FILL_IN_LIBRARY_0081 \
+              $synthetic_library"
+
+              set link_library "* \
+              $target_library \
+              FILL_IN_LIBRARY_0082 \
+              FILL_IN_LIBRARY_0083 \
+              FILL_IN_LIBRARY_0084 \
+              FILL_IN_LIBRARY_0085 \
+              $synthetic_library"
+       } else {
+              set target_library   "FILL_IN_LIBRARY_0074 \
+                                   FILL_IN_LIBRARY_0075 \ 
+                                   FILL_IN_LIBRARY_0076" 
+              set link_library "* \
+                     FILL_IN_LIBRARY_0074 \
+                     FILL_IN_LIBRARY_0075 \
+                     FILL_IN_LIBRARY_0076 \
+                     FILL_IN_LIBRARY_0082\
+                     FILL_IN_LIBRARY_0086 \
+                     FILL_IN_LIBRARY_0087 \
+                     FILL_IN_LIBRARY_0088 \
+                     $synthetic_library"
+       }
+
+
+
+       if {$PT_option == 1 || $MV_option == 0} {
+       } else {
+              set_dont_use "FILL_IN_LIBRARY_0089/PT*"     
+              set_dont_use "FILL_IN_LIBRARY_0090/PT*" 
+              # set_dont_use "FILL_IN_LIBRARY_0091/PT*"
+              # set_dont_use "FILL_IN_LIBRARY_0092/PT*"
+       }
+
+
+
+
+       if {$MV_option == 1} {
+       #CPU PD
+       set_min_library FILL_IN_LIBRARY_0074 \
+                     -min_version FILL_IN_LIBRARY_0093
+
+       set_min_library FILL_IN_LIBRARY_0076 \
+                     -min_version FILL_IN_LIBRARY_0094
+
+       set_min_library FILL_IN_LIBRARY_0075 \
+                     -min_version FILL_IN_LIBRARY_0095
+
+
+       #SYS PD
+       set_min_library FILL_IN_LIBRARY_0081 \
+                     -min_version FILL_IN_LIBRARY_0096
+
+       set_min_library FILL_IN_LIBRARY_0082 \
+                     -min_version FILL_IN_LIBRARY_0097
+
+       #MEM
+       set_min_library FILL_IN_LIBRARY_0083 \
+                     -min_version FILL_IN_LIBRARY_0098
+
+       set_min_library FILL_IN_LIBRARY_0084 \
+                     -min_version FILL_IN_LIBRARY_0099
+
+       set_min_library FILL_IN_LIBRARY_0085 \
+                     -min_version FILL_IN_LIBRARY_0100
+
+       #lv
+       set_min_library FILL_IN_LIBRARY_0077 \
+                     -min_version FILL_IN_LIBRARY_0101 
+
+       set_min_library FILL_IN_LIBRARY_0078 \
+                     -min_version FILL_IN_LIBRARY_0102 
+
+       #PG
+       set_min_library FILL_IN_LIBRARY_0079 \
+                     -min_version FILL_IN_LIBRARY_0103
+
+       set_min_library FILL_IN_LIBRARY_0080 \
+              -min_version FILL_IN_LIBRARY_0104    
+
+       } else {
+              set_min_library FILL_IN_LIBRARY_0074 \
+                            -min_version FILL_IN_LIBRARY_0093
+
+              set_min_library FILL_IN_LIBRARY_0076 \
+                            -min_version FILL_IN_LIBRARY_0094
+
+              set_min_library FILL_IN_LIBRARY_0075 \
+                            -min_version FILL_IN_LIBRARY_0095
+       }
+       set verilogout_no_tri true
+       set hdlin_enable_presto_for_vhdl "TRUE"
+       set sh_enable_line_editing true
+       history keep 100
+       alias h history
+} else {
+
+} 
+

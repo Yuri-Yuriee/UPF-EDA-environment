@@ -1,0 +1,69 @@
+#####################################
+set INPUTSGDC_PATH  ../script/spyglass/SDC2SGDC/input.sgdc
+set RESULT_PATH     ../script/spyglass/SDC2SGDC/output
+#####################################
+
+
+#!SPYGLASS_PROJECT_FILE
+#!VERSION 3.0
+#  -------------------------------------------------------------------
+#  This is a software generated project file. Manual edits to this file could be lost during the next save operation
+#  Copyright Synopsys Inc.
+#  Last Updated By: SpyGlass SpyGlass_vX-2025.06
+#  Last Updated On Thu Jul 16 22:54:43 2026
+#
+#  -------------------------------------------------------------------
+
+##Data Import Section
+
+# SDC2SGDC 使用方式：單步模式
+
+read_file -type sgdc $INPUTSGDC_PATH 
+read_file -type sourcelist ../src/src_clean_baseline/file_list/rtl_sim.f
+# #BackRefFile:../script/spyglass/system/Spyglass_CDC.tcl #LineNumber:6
+# read_file -type verilog /FILL_IN/FILL_IN_RESOURCE_0196
+# #BackRefFile:../script/spyglass/system/Spyglass_CDC.tcl #LineNumber:7
+# read_file -type verilog /FILL_IN/FILL_IN_RESOURCE_0197
+# #BackRefFile:../script/spyglass/system/Spyglass_CDC.tcl #LineNumber:7
+# read_file -type verilog /FILL_IN/FILL_IN_RESOURCE_0198
+# #BackRefFile:../script/spyglass/system/Spyglass_CDC.tcl #LineNumber:7
+read_file -type sglib ../script/spyglass/sglib/design.sglib
+
+##Common Options Section
+
+set_option projectwdir .
+set_option language_mode mixed
+set_option designread_enable_synthesis no
+set_option designread_disable_flatten no
+set_option enableSV09 yes
+set_option enableSV yes
+set_option mthresh 8192
+#set_option stop { FILL_IN_CELL_SRAM_002 FILL_IN_CELL_SRAM_001 FILL_IN_CELL_SRAM_006 FILL_IN_CELL_ICG_009 FILL_IN_CELL_CLOCK_MUX_008 FILL_IN_CELL_RTE_BOUNDARY_PAD_013 FILL_IN_CELL_IO_POWER_PAD_014 FILL_IN_CELL_DIGITAL_IO_PAD_015 FILL_IN_CELL_DIGITAL_IO_PAD_016 FILL_IN_CELL_DFF_ASYNC_SET_RESET_010 FILL_IN_CELL_DELAY_011 }
+set_option incdir { ../include ../src ../sim ../sim/SRAM }
+set_option active_methodology $SPYGLASS_HOME/GuideWare/latest/block/rtl_handoff
+
+set_option sdc2sgdc yes;
+# 啟用 SDC 至 SGDC 的轉換。
+
+set_option sdc_generate_cfp yes;
+# 啟用 cdc_false_path 指令的產生。
+
+set_option support_sdc_style_escaped_name yes;
+# 允許使用 SDC 中沒有進行 escape 的名稱。
+
+set_option sdc2sgdcfile ${RESULT_PATH}/GEN.sgdc;
+# 指定轉換後 SGDC 輸出檔案的名稱。
+
+##Goal Setup Section
+
+current_methodology $SPYGLASS_HOME/GuideWare/latest/block/rtl_handoff
+
+set_parameter sdc_domain_mode sta_scg;
+# 建議使用此設定值。
+# 此模式只會使用 set_clock_group 指令推斷 clock domain。
+
+set_parameter sdc_generated_clocks yes;
+# 將 generated clock 定義轉換成 clock 約束。
+
+set_parameter enable_generated_clocks yes;
+# 讓 generated clock 約束以未註解的形式輸出。

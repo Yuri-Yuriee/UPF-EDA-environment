@@ -1,0 +1,30 @@
+package AXI_addr_map_pkg;
+
+    localparam integer AXI_SLAVE_NUM  = 9;
+
+
+localparam logic [31:0] SLAVE_ADDR_MIN [AXI_SLAVE_NUM] = '{
+    32'h0001_0000,   // S0 IM
+    32'h0002_0000,   // S1 DM
+    32'h0000_0000,   // S2 ROM
+    32'h2000_0000,   // S3 DRAM
+    32'h1002_0000,   // S4 DMA config
+    32'h1001_0000,   // S5 WDT
+    32'h3C00_0000,   // S6 PLIC
+    32'h3000_0000,   // S7 PMU TD_center MMIO
+    32'h3001_0000    // S8 PMU DVFS MMIO
+};
+
+localparam logic [31:0] SLAVE_ADDR_MAX [AXI_SLAVE_NUM] = '{
+    32'h0001_FFFF,   // S0 IM
+    32'h0002_FFFF,   // S1 DM
+    32'h0000_1FFF,   // S2 ROM
+    32'h201F_FFFF,   // S3 DRAM
+    32'h1002_0200,   // S4 DMA config
+    32'h1001_03FF,   // S5 WDT
+    32'h3C20_0008,   // S6 PLIC
+    32'h3000_0034,   // S7 PMU TD_center MMIO
+    32'h3001_000C    // S8 PMU DVFS MMIO
+};
+
+endpackage

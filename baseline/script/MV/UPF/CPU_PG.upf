@@ -1,0 +1,177 @@
+####################### Frontend RTL design stage ######################
+#######################################
+#           Virtual Power Setting
+#######################################
+#upf_version 2.0
+create_supply_set CPU_source_power
+create_supply_set CPU_prim_PG
+create_supply_set CPU_retention
+create_supply_set CPU_isolation
+
+
+create_power_domain PD_CPU -elements {u_TOP/u_cpu/u_cpu} -exclude_elements {u_TOP/u_cpu/u_cpu/u_exe/u_CSR}\
+    -supply {default_retention CPU_retention} \
+    -supply {default_isolation CPU_isolation} \
+    -available_supplies {CPU_source_power}
+
+create_power_domain PD_CPU_ALWY_ON -elements {u_TOP/u_cpu/u_cpu/u_exe/u_CSR}
+
+
+
+
+
+set_domain_supply_net PD_CPU \
+    -primary_power_net CPU_prim_PG.power \
+    -primary_ground_net CPU_prim_PG.ground
+
+set_domain_supply_net PD_CPU_ALWY_ON \
+    -primary_power_net VDD_LEVEL_01 \
+    -primary_ground_net VSS
+
+# Shared ground (common ground reference)
+create_supply_set CPU_retention -function {ground CPU_source_power.ground } -update
+create_supply_set CPU_isolation -function {ground CPU_source_power.ground } -update
+create_supply_set CPU_prim_PG   -function {ground CPU_source_power.ground } -update
+associate_supply_set {CPU_source_power CPU_retention CPU_isolation}
+
+
+# Virtual power switch definition
+create_power_switch CPU_SW \
+    -domain PD_CPU \
+    -input_supply_port {TVDD CPU_source_power.power} \
+    -output_supply_port {VDD CPU_prim_PG.power} \
+    -control_port {NSLEEPIN u_TOP/u_cpu/u_WFI/CPU_ON} \
+    -on_state {ON_state TVDD {NSLEEPIN}} \
+    -off_state {OFF_state {!NSLEEPIN}}
+
+####################### When synthesizing ######################
+
+#######################################
+#           Update Virtual Power
+#######################################
+create_supply_set CPU_source_power \
+    -function {power VDD_LEVEL_01} \
+    -function {ground VSS} \
+    -update
+
+create_supply_set CPU_retention \
+    -function {power VDD_LEVEL_01} \
+    -update
+    #-function {ground CPU_source_power.ground } -update
+
+create_supply_set CPU_isolation \
+    -function {power VDD_LEVEL_01} \
+    -update
+    #-function {ground CPU_source_power.ground } -update
+
+
+add_power_state CPU_source_power -supply \
+    -state OC  { -supply_expr { power == `{FULL_ON, 0.72, 0.88}}}  \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+    #{OFF/FULL_ON, min_voltage, max_voltage}
+
+add_power_state CPU_retention -supply \
+    -state OC  { -supply_expr { power == `{FULL_ON, 0.72, 0.88}}} \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+
+add_power_state CPU_isolation -supply \
+    -state OC  { -supply_expr { power == `{FULL_ON, 0.72, 0.88}}} \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+
+add_power_state CPU_prim_PG -supply \
+    -state ON  { -supply_expr { power == `{FULL_ON, 0.72, 0.88}}} \
+    -state OFF { -supply_expr { power == `{OFF}}} \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+
+create_pst CPU_PST -supplies \
+{CPU_source_power.power CPU_prim_PG.power CPU_source_power.ground}
+
+add_pst_state CPU_ON -pst CPU_PST \
+    -state {OC ON GND}
+
+add_pst_state CPU_OFF -pst CPU_PST \
+    -state {OC OFF GND}
+
+
+if {$syn_sim_option == 0} {
+#set_repeater CPU_RPT -domain PD_CPU -repeater_supply CPU_isolation -applies_to both -applies_to_boundary both
+
+#set_port_attributes -repeater_supply CPU_isolation -ports {u_TOP/u_cpu/u_cpu/*ISO*/ISO}
+#set_port_attributes -elements {.} -attribute repeater_power_net CPU_source_power.power -attribute repeater_ground_net CPU_source_power.ground
+#set_port_attributes CPU_RPT -domain PD_CPU -repeater_supply CPU_isolation -applies_to both -applies_to_boundary both
+#set_port_attributes -elements {.} -repeater_supply CPU_isolation -applies_to both
+
+set_isolation IS_CPU_1 -domain PD_CPU \
+    -isolation_supply CPU_isolation \
+    -clamp_value 1 \
+    -applies_to outputs \
+    -location parent \
+    -isolation_signal u_TOP/u_cpu/u_WFI/CPU_ISO \
+    -isolation_sense high \
+    -elements {u_TOP/u_cpu/u_cpu/CEB u_TOP/u_cpu/u_cpu/u_exe/u_CSR/stall_wfi}
+
+set_isolation IS_CPU_0 -domain PD_CPU \
+    -isolation_supply CPU_isolation \
+    -clamp_value 0 \
+    -applies_to outputs \
+    -location parent \
+    -isolation_signal u_TOP/u_cpu/u_WFI/CPU_ISO \
+    -isolation_sense high \
+    -exclude_elements {u_TOP/u_cpu/u_cpu/u_exe/u_CSR/CSR_mip* u_TOP/u_cpu/u_cpu/interrupt u_TOP/u_cpu/u_cpu/CEB u_TOP/u_cpu/u_cpu/u_exe/u_CSR/clk u_TOP/u_cpu/u_cpu/CEB u_TOP/u_cpu/u_cpu/u_exe/u_CSR/stall_wfi}
+
+ set_retention RT_CPU -domain PD_CPU \
+     -retention_supply CPU_retention \
+     -save_signal    {u_TOP/u_cpu/u_WFI/CPU_save_pulse high} \
+     -restore_signal {u_TOP/u_cpu/u_WFI/CPU_restore_pulse high} \
+     -elements {u_TOP/u_cpu/u_cpu/u_if/invalid* u_TOP/u_cpu/u_cpu/u_if/power_on_valid* u_TOP/u_cpu/u_cpu/u_id/RF* u_TOP/u_cpu/u_cpu/u_id/F_RF*}
+
+     #-exclude_elements {u_TOP/u_cpu/u_cpu/u_if/PC_counter* u_TOP/u_cpu/u_cpu/u_if/ID_PC* u_TOP/u_cpu/u_cpu/u_if/dff_PC*} \
+     #      -applies_to any \ innovus 不支援
+
+
+     # restore_signal must be a pulse signal
+     # '*' is used to avoid cell name mismatch after synthesis
+     # (registers are typically renamed with suffix like "_reg")
+     # It is recommended to place -elements at the end
+     # '*' may conflict with '\' in some cases
+ map_retention_cell RT_CPU -domain PD_CPU \
+     -lib_cells { \
+         FILL_IN_CELL_RETENTION_DFF_017 \
+         FILL_IN_CELL_RETENTION_DFF_018 \
+         FILL_IN_CELL_RETENTION_DFF_019 \
+         FILL_IN_CELL_RETENTION_DFF_020 \
+         FILL_IN_CELL_RETENTION_DFF_021 \
+         FILL_IN_CELL_RETENTION_DFF_022 \
+         FILL_IN_CELL_RETENTION_DFF_023 \
+         FILL_IN_CELL_RETENTION_DFF_024 \
+         FILL_IN_CELL_RETENTION_DFF_025 \
+         FILL_IN_CELL_RETENTION_DFF_026 \
+         FILL_IN_CELL_RETENTION_DFF_027 \
+         FILL_IN_CELL_RETENTION_DFF_028 \
+     }
+
+ map_power_switch CPU_SW \
+     -lib_cells { \
+         FILL_IN_CELL_POWER_SWITCH_029 \
+         FILL_IN_CELL_POWER_SWITCH_030 \
+         FILL_IN_CELL_POWER_SWITCH_031 \
+         FILL_IN_CELL_POWER_SWITCH_032 \
+         FILL_IN_CELL_POWER_SWITCH_033 \
+         FILL_IN_CELL_POWER_SWITCH_034 \
+         FILL_IN_CELL_POWER_SWITCH_035 \
+         FILL_IN_CELL_POWER_SWITCH_036 \
+         FILL_IN_CELL_POWER_SWITCH_037 \
+         FILL_IN_CELL_POWER_SWITCH_038 \
+         FILL_IN_CELL_POWER_SWITCH_039 \
+         FILL_IN_CELL_POWER_SWITCH_040 \
+     }
+}
+#      -domain PD_CPU \ innovus 不支援
+# Retention cells must be mapped, otherwise insertion will fail
+# map_isolation_cell
+# map_level_shifter_cell
+# map_power_switch
+# 找不到CELL 可能是加到TARGET 或 LINK 沒加好
+# Power Switch 不會implement 在 design Compiler
+# Both {} and `{} syntaxes are acceptable
+# `{} is the standard syntax

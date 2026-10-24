@@ -1,0 +1,192 @@
+[
+  {
+    "old": "run/tool/00_common/TT_checkpoint_tool_menu.tcl",
+    "source": "script/PR/TECH_MV/script/00_common/checkpoint_tool_menu.tcl",
+    "logical_source_identity": "build_PR/run/tool/00_common/TT_checkpoint_tool_menu.tcl"
+  },
+  {
+    "old": "run/tool/00_common/TT_import_geometry_info.tcl",
+    "source": "script/PR/TECH_MV/script/00_common/import_geometry_info.tcl",
+    "logical_source_identity": "build_PR/run/tool/00_common/TT_import_geometry_info.tcl"
+  },
+  {
+    "old": "run/tool/00_common/TT_pr6_verify_loaded_version.tcl",
+    "source": "script/PR/TECH_MV/script/00_common/pr6_verify_loaded_version.tcl",
+    "logical_source_identity": "build_PR/run/tool/00_common/TT_pr6_verify_loaded_version.tcl"
+  },
+  {
+    "old": "run/tool/00_common/TT_private_parameter_config.tcl",
+    "source": "script/PR/TECH_MV/script/00_common/private_parameter_config.tcl",
+    "logical_source_identity": "build_PR/run/tool/00_common/TT_private_parameter_config.tcl"
+  },
+  {
+    "old": "run/tool/00_common/drc/TT_DRC_fix_same_mask_aggressive.tcl",
+    "source": "script/PR/TECH_MV/script/00_common/drc/DRC_fix_same_mask_aggressive.tcl",
+    "logical_source_identity": "build_PR/run/tool/00_common/drc/TT_DRC_fix_same_mask_aggressive.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/TT_floorplan_restore_level0_driver.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/floorplan_restore_level0_driver.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/TT_floorplan_restore_level0_driver.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/TT_floorplan_restore_native_driver.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/floorplan_restore_native_driver.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/TT_floorplan_restore_native_driver.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/TT_proc_iopad_ring_model.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/proc_iopad_ring_model.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/TT_proc_iopad_ring_model.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/checks/TT_proc_check_pd_endcaps.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/checks/proc_check_pd_endcaps.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/checks/TT_proc_check_pd_endcaps.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/checks/TT_proc_pd_guard.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/checks/proc_pd_guard.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/checks/TT_proc_pd_guard.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/checks/TT_proc_pd_row_guard.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/checks/proc_pd_row_guard.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/checks/TT_proc_pd_row_guard.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/endcap_welltap/TT_proc_legalize_pd_endcaps.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/endcap_welltap/proc_legalize_pd_endcaps.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/endcap_welltap/TT_proc_legalize_pd_endcaps.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/endcap_welltap/TT_proc_remove_overlap_welltap.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/endcap_welltap/proc_remove_overlap_welltap.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/endcap_welltap/TT_proc_remove_overlap_welltap.tcl"
+  },
+  {
+    "old": "run/tool/01_floorplan/endcap_welltap/TT_proc_trim_powergate_bottom_row.tcl",
+    "source": "script/PR/TECH_MV/script/01_floorplan/endcap_welltap/proc_trim_powergate_bottom_row.tcl",
+    "logical_source_identity": "build_PR/run/tool/01_floorplan/endcap_welltap/TT_proc_trim_powergate_bottom_row.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/TT_delete_followpin_outside_pd_boundary.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/delete_followpin_outside_pd_boundary.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/TT_delete_followpin_outside_pd_boundary.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/TT_flow_place_2row_sdp_v3_2.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/flow_place_2row_sdp_v3_2.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/TT_flow_place_2row_sdp_v3_2.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/TT_powerplan_restore_native_driver.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/powerplan_restore_native_driver.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/TT_powerplan_restore_native_driver.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/power_switch/TT_SW_M4_CONNECTIVITY_GATE.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/power_switch/SW_M4_CONNECTIVITY_GATE.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/power_switch/TT_SW_M4_CONNECTIVITY_GATE.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/power_switch/TT_SW_M4_LANDING_REPAIR.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/power_switch/SW_M4_LANDING_REPAIR.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/power_switch/TT_SW_M4_LANDING_REPAIR.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/power_switch/TT_SW_M4_POST_RAIL_HOOK.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/power_switch/SW_M4_POST_RAIL_HOOK.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/power_switch/TT_SW_M4_POST_RAIL_HOOK.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/power_switch/TT_proc_power_switch_edge_reinforce.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/power_switch/proc_power_switch_edge_reinforce.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/power_switch/TT_proc_power_switch_edge_reinforce.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/power_switch/TT_proc_power_switch_pattern_guard.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/power_switch/proc_power_switch_pattern_guard.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/power_switch/TT_proc_power_switch_pattern_guard.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/sdp/TT_repair_powergate_iso_slots.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/sdp/repair_powergate_iso_slots.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/sdp/TT_repair_powergate_iso_slots.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/sdp/TT_sdp_post_resume.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/sdp/sdp_post_resume.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/sdp/TT_sdp_post_resume.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/secondary_pg/TT_flow_post_place_lp_2ndpg.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/secondary_pg/flow_post_place_lp_2ndpg.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/secondary_pg/TT_flow_post_place_lp_2ndpg.tcl"
+  },
+  {
+    "old": "run/tool/02_powerplan/welltap/TT_proc_create_2row_sdp_welltap.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/welltap/proc_create_2row_sdp_welltap.tcl",
+    "logical_source_identity": "build_PR/run/tool/02_powerplan/welltap/TT_proc_create_2row_sdp_welltap.tcl"
+  },
+  {
+    "old": "run/tool/03_place/drc/TT_DRC_fix_inst_padding.tcl",
+    "source": "script/PR/TECH_MV/script/03_place/drc/DRC_fix_inst_padding.tcl",
+    "logical_source_identity": "build_PR/run/tool/03_place/drc/TT_DRC_fix_inst_padding.tcl"
+  },
+  {
+    "old": "run/tool/03_place/padding/TT_proc_ls_iso_padding.tcl",
+    "source": "script/PR/TECH_MV/script/03_place/padding/proc_ls_iso_padding.tcl",
+    "logical_source_identity": "build_PR/run/tool/03_place/padding/TT_proc_ls_iso_padding.tcl"
+  },
+  {
+    "old": "run/tool/03_place/padding/TT_proc_ls_padding.tcl",
+    "source": "script/PR/TECH_MV/script/03_place/padding/proc_ls_padding.tcl",
+    "logical_source_identity": "build_PR/run/tool/03_place/padding/TT_proc_ls_padding.tcl"
+  },
+  {
+    "old": "run/tool/05_route/drc/TT_DRC_fix_metal_same_mask.tcl",
+    "source": "script/PR/TECH_MV/script/05_route/drc/DRC_fix_metal_same_mask.tcl",
+    "logical_source_identity": "build_PR/run/tool/05_route/drc/TT_DRC_fix_metal_same_mask.tcl"
+  },
+  {
+    "old": "run/tool/05_route/drc/TT_delete_VIA8_by_DRC.tcl",
+    "source": "script/PR/TECH_MV/script/05_route/drc/delete_VIA8_by_DRC.tcl",
+    "logical_source_identity": "build_PR/run/tool/05_route/drc/TT_delete_VIA8_by_DRC.tcl"
+  },
+  {
+    "old": "run/tool/03_place/drc/set_inst_padding.tcl",
+    "source": "script/PR/TECH_MV/script/03_place/drc/DRC_inst_padding_hook.tcl",
+    "logical_source_identity": "build_PR/run/tool/03_place/drc/set_inst_padding.tcl"
+  },
+  {
+    "old": "run/check_setup.tcl",
+    "source": "script/PR/TECH_MV/script/00_common/check_setup.tcl",
+    "logical_source_identity": "build_PR/run/check_setup.tcl"
+  },
+  {
+    "old": "run/pns.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/pns.tcl",
+    "logical_source_identity": "build_PR/run/pns.tcl"
+  },
+  {
+    "old": "run/early_rail_analysis.tcl",
+    "source": "script/PR/TECH_MV/script/02_powerplan/early_rail_analysis.tcl",
+    "logical_source_identity": "build_PR/run/early_rail_analysis.tcl"
+  },
+  {
+    "old": "run/generate_pg_lib.tcl",
+    "source": "script/PR/TECH_MV/script/06_finish/generate_pg_lib.tcl",
+    "logical_source_identity": "build_PR/run/generate_pg_lib.tcl"
+  },
+  {
+    "old": "run/runset.tcl",
+    "source": "script/PR/TECH_MV/script/runset.tcl",
+    "logical_source_identity": "build_PR/run/runset.tcl"
+  },
+  {
+    "old": "run/test.tcl",
+    "source": "script/PR/TECH_MV/script/99_debug/test.tcl",
+    "logical_source_identity": "build_PR/run/test.tcl"
+  }
+]

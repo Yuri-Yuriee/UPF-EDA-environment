@@ -1,0 +1,197 @@
+# =============================================================================
+# TECH MV MMMC Setup
+# =============================================================================
+# File path is assigned by MMMC_FILE in init.setup.
+# This file intentionally contains no file-existence checking.
+
+set ::MMMC_SETUP_VIEW AV_func_max_rcw
+set ::MMMC_HOLD_VIEW  AV_func_min_rcb
+
+# File paths are defined in init.setup.
+set QRC_BEST  $MMMC_QRC_BEST_FILE
+set QRC_WORST $MMMC_QRC_WORST_FILE
+
+set core_LEVEL_01_lib_wc          $MMMC_CORE_LEVEL_01_LIB_WC_FILES
+set core_LEVEL_02_lib_wc         $MMMC_CORE_LEVEL_02_LIB_WC_FILES
+set IO_lib_wc                $MMMC_IO_LIB_WC_FILES
+set lvl_LEVEL_01_H2L_LEVEL_02_lib_wc  $MMMC_LVL_LEVEL_01_H2L_LEVEL_02_LIB_WC_FILES
+set lvl_LEVEL_02_L2H_LEVEL_01_lib_wc  $MMMC_LVL_LEVEL_02_L2H_LEVEL_01_LIB_WC_FILES
+set pm_LEVEL_01_lib_wc            $MMMC_PM_LEVEL_01_LIB_WC_FILES
+set pm_LEVEL_02_lib_wc           $MMMC_PM_LEVEL_02_LIB_WC_FILES
+set mem_lib_wc               $MMMC_MEM_LIB_WC_FILES
+
+set core_LEVEL_01_lib_bc          $MMMC_CORE_LEVEL_01_LIB_BC_FILES
+set core_LEVEL_02_lib_bc         $MMMC_CORE_LEVEL_02_LIB_BC_FILES
+set IO_lib_bc                $MMMC_IO_LIB_BC_FILES
+set lvl_LEVEL_01_H2L_LEVEL_02_lib_bc  $MMMC_LVL_LEVEL_01_H2L_LEVEL_02_LIB_BC_FILES
+set lvl_LEVEL_02_L2H_LEVEL_01_lib_bc  $MMMC_LVL_LEVEL_02_L2H_LEVEL_01_LIB_BC_FILES
+set pm_LEVEL_01_lib_bc            $MMMC_PM_LEVEL_01_LIB_BC_FILES
+set pm_LEVEL_02_lib_bc           $MMMC_PM_LEVEL_02_LIB_BC_FILES
+set mem_lib_bc               $MMMC_MEM_LIB_BC_FILES
+
+# ============================================================
+# Library Set
+# ============================================================
+# WC
+create_library_set -name core_LEVEL_01_lib_wc \
+    -timing [concat \
+        $core_LEVEL_01_lib_wc \
+        $pm_LEVEL_01_lib_wc \
+        $IO_lib_wc \
+    ]
+
+create_library_set -name core_LEVEL_02_lib_wc \
+    -timing [concat \
+        $core_LEVEL_02_lib_wc \
+        $pm_LEVEL_02_lib_wc \
+        $mem_lib_wc \
+    ]
+
+create_library_set -name lvl_LEVEL_01_H2L_LEVEL_02_lib_wc \
+    -timing [concat \
+        $lvl_LEVEL_01_H2L_LEVEL_02_lib_wc \
+    ]
+
+create_library_set -name lvl_LEVEL_02_L2H_LEVEL_01_lib_wc \
+    -timing [concat \
+        $lvl_LEVEL_02_L2H_LEVEL_01_lib_wc \
+    ]
+
+# BC
+create_library_set -name core_LEVEL_01_lib_bc \
+    -timing [concat \
+        $core_LEVEL_01_lib_bc \
+        $pm_LEVEL_01_lib_bc \
+        $IO_lib_bc \
+    ]
+
+create_library_set -name core_LEVEL_02_lib_bc \
+    -timing [concat \
+        $core_LEVEL_02_lib_bc \
+        $pm_LEVEL_02_lib_bc \
+        $mem_lib_bc \
+    ]
+
+create_library_set -name lvl_LEVEL_01_H2L_LEVEL_02_lib_bc \
+    -timing [concat \
+        $lvl_LEVEL_01_H2L_LEVEL_02_lib_bc \
+    ]
+
+create_library_set -name lvl_LEVEL_02_L2H_LEVEL_01_lib_bc \
+    -timing [concat \
+        $lvl_LEVEL_02_L2H_LEVEL_01_lib_bc \
+    ]
+
+# ============================================================
+# RC Corner
+# ============================================================
+create_rc_corner -name RC_best \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_res {FILL_IN_pre_route_res_89} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -post_route_res {FILL_IN_post_route_res_90} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_cap {FILL_IN_pre_route_cap_91} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -post_route_cap {FILL_IN_post_route_cap_92} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -post_route_cross_cap {FILL_IN_post_route_cross_cap_93} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_clock_res {FILL_IN_pre_route_clock_res_94} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_clock_cap {FILL_IN_pre_route_clock_cap_95} \
+# 請填入 RC／timing corner 的溫度（依工具單位）
+    -temperature {FILL_IN_temperature_96} \
+    -qrc_tech $QRC_BEST
+
+create_rc_corner -name RC_worst \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_res {FILL_IN_pre_route_res_100} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -post_route_res {FILL_IN_post_route_res_101} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_cap {FILL_IN_pre_route_cap_102} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -post_route_cap {FILL_IN_post_route_cap_103} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -post_route_cross_cap {FILL_IN_post_route_cross_cap_104} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_clock_res {FILL_IN_pre_route_clock_res_105} \
+# 請填入本地設計／製程的設定值，保持原資料型別
+    -pre_route_clock_cap {FILL_IN_pre_route_clock_cap_106} \
+# 請填入 RC／timing corner 的溫度（依工具單位）
+    -temperature {FILL_IN_temperature_107} \
+    -qrc_tech $QRC_WORST
+
+# ============================================================
+# Timing Condition
+# ============================================================
+create_timing_condition -name TC_MAX_LEVEL_01 \
+    -library_sets [concat \
+        core_LEVEL_01_lib_wc \
+        lvl_LEVEL_01_H2L_LEVEL_02_lib_wc \
+        lvl_LEVEL_02_L2H_LEVEL_01_lib_wc \
+    ]
+
+create_timing_condition -name TC_MIN_LEVEL_01 \
+    -library_sets [concat \
+        core_LEVEL_01_lib_bc \
+        lvl_LEVEL_01_H2L_LEVEL_02_lib_bc \
+        lvl_LEVEL_02_L2H_LEVEL_01_lib_bc \
+    ]
+
+create_timing_condition -name TC_MAX_LEVEL_02 \
+    -library_sets [concat \
+        core_LEVEL_02_lib_wc \
+        lvl_LEVEL_01_H2L_LEVEL_02_lib_wc \
+        lvl_LEVEL_02_L2H_LEVEL_01_lib_wc \
+    ]
+
+create_timing_condition -name TC_MIN_LEVEL_02 \
+    -library_sets [concat \
+        core_LEVEL_02_lib_bc \
+        lvl_LEVEL_01_H2L_LEVEL_02_lib_bc \
+        lvl_LEVEL_02_L2H_LEVEL_01_lib_bc \
+    ]
+
+# ============================================================
+# Delay Corner
+# ============================================================
+create_delay_corner -name DC_MAX \
+    -rc_corner RC_worst \
+    -timing_condition "TC_MAX_LEVEL_01 PD_core@TC_MAX_LEVEL_01 \
+                                PD_TOP@TC_MAX_LEVEL_02 \
+                                PD_CPU@TC_MAX_LEVEL_01 \
+                                PD_CPU_ALWY_ON@TC_MAX_LEVEL_01 \
+                                PD_WDT@TC_MAX_LEVEL_02"
+
+create_delay_corner -name DC_MIN \
+    -rc_corner RC_best \
+    -timing_condition "TC_MIN_LEVEL_01 PD_core@TC_MIN_LEVEL_01 \
+                                PD_TOP@TC_MIN_LEVEL_02 \
+                                PD_CPU@TC_MIN_LEVEL_01 \
+                                PD_CPU_ALWY_ON@TC_MIN_LEVEL_01 \
+                                PD_WDT@TC_MIN_LEVEL_02"
+
+# ============================================================
+# Constraint Mode
+# ============================================================
+create_constraint_mode -name CM_func \
+    -sdc_files [list $SDC_FILE]
+
+# ============================================================
+# Analysis View
+# ============================================================
+create_analysis_view -name $::MMMC_SETUP_VIEW \
+    -constraint_mode CM_func \
+    -delay_corner DC_MAX
+
+create_analysis_view -name $::MMMC_HOLD_VIEW \
+    -constraint_mode CM_func \
+    -delay_corner DC_MIN
+
+set_analysis_view \
+    -setup   [list $::MMMC_SETUP_VIEW] \
+    -hold    [list $::MMMC_HOLD_VIEW] \
+    -leakage $::MMMC_HOLD_VIEW \
+    -dynamic $::MMMC_HOLD_VIEW

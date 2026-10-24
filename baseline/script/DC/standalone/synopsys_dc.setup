@@ -1,0 +1,61 @@
+set company "CIC"
+set designer "Student"
+
+set CoreSearchPath "/FILL_IN/FILL_IN_RESOURCE_0063 \
+/FILL_IN/FILL_IN_RESOURCE_0064 \
+/FILL_IN/FILL_IN_RESOURCE_0065 "
+
+set IOSearchPath /FILL_IN/FILL_IN_RESOURCE_0066
+set MemoryPath "/FILL_IN/FILL_IN_RESOURCE_0105 \
+              /FILL_IN/FILL_IN_RESOURCE_0106 \  
+              /FILL_IN/FILL_IN_RESOURCE_0107 "
+set DefintionPath ../include
+
+
+set search_path "$CoreSearchPath $IOSearchPath $MemoryPath $DefintionPath $search_path"
+
+if {$PT_option == 1} {
+       set synthetic_library ""
+       set symbol_library "generic_sdb"
+} else {
+       set synthetic_library "dw_foundation.sldb"
+}
+
+
+set target_library "FILL_IN_LIBRARY_0081 \
+$synthetic_library"
+
+set link_library "* \
+$target_library \
+FILL_IN_LIBRARY_0082 \
+FILL_IN_LIBRARY_0083 \
+FILL_IN_LIBRARY_0084 \
+FILL_IN_LIBRARY_0085 \
+$synthetic_library"
+
+
+#SYS
+set_min_library FILL_IN_LIBRARY_0081 \
+              -min_version FILL_IN_LIBRARY_0096
+
+set_min_library FILL_IN_LIBRARY_0082 \
+              -min_version FILL_IN_LIBRARY_0097
+
+#MEM
+set_min_library FILL_IN_LIBRARY_0083 \
+              -min_version FILL_IN_LIBRARY_0098
+
+set_min_library FILL_IN_LIBRARY_0084 \
+              -min_version FILL_IN_LIBRARY_0099
+
+set_min_library FILL_IN_LIBRARY_0085 \
+              -min_version FILL_IN_LIBRARY_0100
+
+
+
+set verilogout_no_tri true
+set hdlin_enable_presto_for_vhdl "TRUE"
+set sh_enable_line_editing true
+history keep 100
+alias h history
+

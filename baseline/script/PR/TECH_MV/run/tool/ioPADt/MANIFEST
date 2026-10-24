@@ -1,0 +1,20 @@
+TECH_MV IOPAD V125 PAYLOAD MANIFEST
+====================================
+Formal runtime targets:
+  build_PR/run/tool/TT_tool_iopad_innovus_local_bridge.tcl
+  build_PR/run/tool/TT_flow_iopad_interface_start.tcl
+  build_PR/run/tool/ioPADt/*
+
+V125 key policy:
+  - IO_FILE is optional; no-IO discovery can use generated Tcl or live bridge.
+  - Discovery side families: FILL_IN_CELL_DIGITAL_IO_PAD_050, FILL_IN_CELL_RTE_BOUNDARY_PAD_051, FILL_IN_CELL_CORE_POWER_PAD_042, FILL_IN_CELL_IO_POWER_PAD_043, FILL_IN_CELL_IO_RAIL_CUT_052.
+  - Confirmed corner master: FILL_IN_CELL_IO_CORNER_053.
+  - Runtime snapshots/bootstrap files live under ioPADt/build/.
+  - Minimum PAD spacing is 15.0 units and offset spacing/anchor checks block Save/Apply.
+  - ESD maps to ESD; VSS maps to VSS; the two rails are independent.
+  - Reset ALL Global Net clears working state without touching the source Tcl.
+  - Newly introduced nets get create_net -physical -ground -name <NET> plus skip_routing.
+  - read_io_file always uses -no_die_size_adjust.
+  - Backups are stored under PROJECT_ROOT/backup/.
+
+SHA256 checksums are provided by the installer package SHA256SUMS file.

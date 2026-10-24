@@ -1,0 +1,46 @@
+# =============================================================================
+# TECH MV Innovus Environment / Path Setup
+# =============================================================================
+# Runtime init.setup is self-locating so run/*.tcl does not depend on
+# Innovus script_search_path. The flow executes from build_PR, preserving the
+# historical meaning of all relative user-config paths.
+# =============================================================================
+
+set TECH_MV_INIT_SETUP_FILE [file normalize [info script]]
+set INNOVUS_WORK_DIR [file dirname $TECH_MV_INIT_SETUP_FILE]
+set ::TECH_MV_RUNTIME_ROOT $INNOVUS_WORK_DIR
+
+if {[file tail $INNOVUS_WORK_DIR] ne "build_PR"} {
+    error "TECH_MV init.setup must be the runtime copy under build_PR: $TECH_MV_INIT_SETUP_FILE"
+}
+
+if {[file normalize [pwd]] ne [file normalize $INNOVUS_WORK_DIR]} {
+    puts "INFO: Changing Innovus working directory to $INNOVUS_WORK_DIR"
+    cd $INNOVUS_WORK_DIR
+}
+
+set SETUP_DIR  [file join $INNOVUS_WORK_DIR setup]
+set RUN_DIR    [file join $INNOVUS_WORK_DIR run]
+set TOOL_DIR   [file join $RUN_DIR tool]
+set SCRIPT_DIR [file normalize [file join $INNOVUS_WORK_DIR .. script PR TECH_MV script]]
+
+set DB_DIR     [file join $INNOVUS_WORK_DIR dbs]
+set OUTPUT_DIR [file join $INNOVUS_WORK_DIR outputs]
+set REPORT_DIR [file join $INNOVUS_WORK_DIR reports]
+set LOG_DIR    [file join $INNOVUS_WORK_DIR logs]
+set TEMP_DIR   [file join $INNOVUS_WORK_DIR .temp]
+
+set CONFIG_FILE [file join $SETUP_DIR config.tcl]
+if {![file isfile $CONFIG_FILE]} {
+    error "TECH_MV config master not found: $CONFIG_FILE"
+}
+source $CONFIG_FILE
+
+set REPORT_UTIL_FILE [file join $SCRIPT_DIR report_utils.tcl]
+if {![file exists $REPORT_UTIL_FILE]} {
+    error "Report utility not found: $REPORT_UTIL_FILE"
+}
+source $REPORT_UTIL_FILE
+source [file join $TOOL_DIR 00_common TT_runtime_output_helpers.tcl]
+source [file join $::TECH_MV_RUNTIME_ROOT .. script PR TECH_MV script 00_common checkpoint_tool_menu.tcl]
+

@@ -1,0 +1,12 @@
+# TECH_MV HCELL exact exclusions
+#
+# These three level-shifter cells were the only stdcell HCELLs still INCORRECT
+# after enabling foundry WELL_TEXT. Calibre extraction reports duplicated VPP
+# M1 text on physically distinct nets inside each cell, and source HCELL high-
+# shorts VDD/VPP. Keep them out of explicit HCELL so full-chip context can
+# resolve their abutment/well connectivity without sacrificing HCELL reuse for
+# the remaining ~3.7k library cells.
+FILL_IN_LIST_ITEM_9
+FILL_IN_LIST_ITEM_10
+FILL_IN_LIST_ITEM_11
+FILL_IN_LIST_ITEM_12

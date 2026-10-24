@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "profile_id": "authorized_local",
+  "corner_master_family": "FILL_IN_root_corner_master_family",
+  "master_roles": {
+    "FILL_IN_root_master_roles_MASTER_1": "SIGNAL",
+    "FILL_IN_root_master_roles_MASTER_2": "RTE",
+    "FILL_IN_root_master_roles_MASTER_3": "CORE_POWER",
+    "FILL_IN_root_master_roles_MASTER_4": "IO_POWER",
+    "FILL_IN_root_master_roles_MASTER_5": "FILL_IN_CELL_IO_RAIL_CUT_052"
+  },
+  "master_normalization_pattern": "FILL_IN_root_master_normalization_pattern",
+  "query_master_families": [
+    "FILL_IN_root_query_master_families_item1",
+    "FILL_IN_root_query_master_families_item2",
+    "FILL_IN_root_query_master_families_item3",
+    "FILL_IN_root_query_master_families_item4",
+    "FILL_IN_root_query_master_families_item5",
+    "FILL_IN_root_query_master_families_item6"
+  ],
+  "query_confirmed_families": [
+    "FILL_IN_root_query_confirmed_families_item1",
+    "FILL_IN_root_query_confirmed_families_item2",
+    "FILL_IN_root_query_confirmed_families_item3",
+    "FILL_IN_root_query_confirmed_families_item4",
+    "FILL_IN_root_query_confirmed_families_item5"
+  ],
+  "signatures": {
+    "boundary_pg_exact": [
+      "FILL_IN_root_signatures_boundary_pg_exact_item1",
+      "FILL_IN_root_signatures_boundary_pg_exact_item2",
+      "FILL_IN_root_signatures_boundary_pg_exact_item3"
+    ],
+    "rte_signal_exact": [
+      "FILL_IN_root_signatures_rte_signal_exact_item1",
+      "FILL_IN_root_signatures_rte_signal_exact_item2"
+    ],
+    "signal_required": [
+      "FILL_IN_root_signatures_signal_required_item1",
+      "FILL_IN_root_signatures_signal_required_item2"
+    ],
+    "power_signal_exact": [
+      "FILL_IN_root_signatures_power_signal_exact_item1"
+    ],
+    "power_pg_required": [
+      "FILL_IN_root_signatures_power_pg_required_item1",
+      "FILL_IN_root_signatures_power_pg_required_item2",
+      "FILL_IN_root_signatures_power_pg_required_item3",
+      "FILL_IN_root_signatures_power_pg_required_item4"
+    ]
+  },
+  "rail_defs": {
+    "CORE POWER": {
+      "source_role": "CORE_POWER",
+      "carrier_kind": "pg",
+      "carrier_pin": "FILL_IN_root_rail_defs_CORE_POWER_carrier_pin",
+      "label": "FILL_IN_root_rail_defs_CORE_POWER_label"
+    },
+    "IO POWER": {
+      "source_role": "IO_POWER",
+      "carrier_kind": "pg",
+      "carrier_pin": "FILL_IN_root_rail_defs_IO_POWER_carrier_pin",
+      "label": "FILL_IN_root_rail_defs_IO_POWER_label"
+    },
+    "RTE": {
+      "source_role": "RTE",
+      "carrier_kind": "pin",
+      "carrier_pin": "FILL_IN_root_rail_defs_RTE_carrier_pin",
+      "label": "FILL_IN_root_rail_defs_RTE_label"
+    }
+  },
+  "rail_cut_at_boundary": {
+    "CORE POWER": true,
+    "IO POWER": true,
+    "RTE": true
+  },
+  "domain_exclusive_pins": [
+    "FILL_IN_root_domain_exclusive_pins_item1",
+    "FILL_IN_root_domain_exclusive_pins_item2",
+    "FILL_IN_root_domain_exclusive_pins_item3",
+    "FILL_IN_root_domain_exclusive_pins_item4",
+    "FILL_IN_root_domain_exclusive_pins_item5"
+  ],
+  "domain_consistent_pins": [
+    "FILL_IN_root_domain_consistent_pins_item1"
+  ],
+  "domain_column_pins": {
+    "vddpst": "FILL_IN_root_domain_column_pins_vddpst",
+    "vsspst": "FILL_IN_root_domain_column_pins_vsspst",
+    "esd": "FILL_IN_root_domain_column_pins_esd",
+    "pocctrl": "FILL_IN_root_domain_column_pins_pocctrl",
+    "rte_net": "FILL_IN_root_domain_column_pins_rte_net",
+    "vdd": "FILL_IN_root_domain_column_pins_vdd"
+  },
+  "expected_rail_pins": {
+    "CORE POWER": "FILL_IN_root_expected_rail_pins_CORE_POWER",
+    "IO POWER": "FILL_IN_root_expected_rail_pins_IO_POWER",
+    "RTE": "FILL_IN_root_expected_rail_pins_RTE"
+  },
+  "ground_expectations": {
+    "VSS": "FILL_IN_root_ground_expectations_VSS",
+    "VSSPST": "FILL_IN_root_ground_expectations_VSSPST"
+  },
+  "literal_tokens": {
+    "LITERAL_001": "FILL_IN_root_literal_tokens_LITERAL_001",
+    "LITERAL_002": "FILL_IN_root_literal_tokens_LITERAL_002",
+    "LITERAL_003": "FILL_IN_root_literal_tokens_LITERAL_003",
+    "LITERAL_004": "FILL_IN_root_literal_tokens_LITERAL_004",
+    "LITERAL_005": "FILL_IN_root_literal_tokens_LITERAL_005",
+    "LITERAL_006": "FILL_IN_root_literal_tokens_LITERAL_006",
+    "LITERAL_007": "FILL_IN_root_literal_tokens_LITERAL_007",
+    "LITERAL_008": "FILL_IN_root_literal_tokens_LITERAL_008",
+    "LITERAL_009": "FILL_IN_root_literal_tokens_LITERAL_009",
+    "LITERAL_010": "FILL_IN_root_literal_tokens_LITERAL_010",
+    "LITERAL_011": "FILL_IN_root_literal_tokens_LITERAL_011",
+    "LITERAL_012": "FILL_IN_root_literal_tokens_LITERAL_012",
+    "LITERAL_013": "FILL_IN_root_literal_tokens_LITERAL_013",
+    "LITERAL_014": "FILL_IN_root_literal_tokens_LITERAL_014",
+    "LITERAL_015": "FILL_IN_root_literal_tokens_LITERAL_015",
+    "LITERAL_016": "FILL_IN_root_literal_tokens_LITERAL_016",
+    "LITERAL_017": "FILL_IN_root_literal_tokens_LITERAL_017"
+  }
+}

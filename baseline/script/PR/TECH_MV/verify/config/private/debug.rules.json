@@ -1,0 +1,19 @@
+{
+  "source_statement_file": "FILL_IN_root_source_statement_file",
+  "switch_master_pattern": "FILL_IN_root_switch_master_pattern",
+  "switch_pin_pair_pattern": "FILL_IN_root_switch_pin_pair_pattern",
+  "switch_roles": {
+    "input": "FILL_IN_root_switch_roles_input",
+    "output": "FILL_IN_root_switch_roles_output",
+    "switched_power": "FILL_IN_root_switch_roles_switched_power",
+    "primary_power": "FILL_IN_root_switch_roles_primary_power"
+  },
+  "body_pins": [
+    "FILL_IN_root_body_pins_item1",
+    "FILL_IN_root_body_pins_item2",
+    "FILL_IN_root_body_pins_item3",
+    "FILL_IN_root_body_pins_item4",
+    "FILL_IN_root_body_pins_item5"
+  ],
+  "body_scope_description": "FILL_IN_root_body_scope_description"
+}

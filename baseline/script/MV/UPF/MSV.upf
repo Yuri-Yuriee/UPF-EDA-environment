@@ -1,0 +1,143 @@
+#######################################
+#           Path
+#######################################
+
+set UPF_ROOT   [file normalize [file dirname [info script]]]
+set ROOT_PATH  [file normalize [file join $UPF_ROOT ../../..]]
+set BUILD_PATH [file normalize [pwd]]
+
+puts "========================================"
+puts " ROOT_PATH  = $ROOT_PATH"
+puts " BUILD_PATH = $BUILD_PATH"
+puts " UPF_ROOT   = $UPF_ROOT"
+puts "========================================"
+
+
+set_design_top CHIP
+upf_version 3.0
+#set upf_allow_refer_before_define true
+set_design_attributes -elements {.} -attribute SNPS_keep_unassociated_iso_on TRUE
+set_design_attributes -elements {.} -attribute enable_state_propagation_in_add_power_state true
+set_design_attributes -elements {.} -attribute lower_domain_boundary true
+set_port_attributes   -elements {.} -attribute related_supply_default_primary true
+set_design_attributes -elements {.} -attribute SNPS_name_based_source_sink TRUE
+#set_design_attributes -attribute suppress_iss PD_CHIP
+#######################################
+#           Global
+#######################################
+
+set CPU_PG_option 1
+set WDT_PG_option 1
+
+set syn_sim_option 0
+set syn_option 1
+
+create_power_domain PD_core -elements {.}
+create_power_domain PD_TOP  -elements {u_TOP}
+
+
+create_supply_port VDD_LEVEL_01      -direction inout
+create_supply_port VDD_LEVEL_02     -direction inout
+create_supply_port VDDPST       -direction inout
+create_supply_port VSS          -direction inout
+
+add_port_state VDD_LEVEL_02     -state {WC 0.5}     -state {BC 0.6}
+add_port_state VDDPST       -state {WC 1.62}    -state {BC 1.88}
+add_port_state VDD_LEVEL_01      -state {WC 0.72}    -state {BC 0.88}
+add_port_state VSS          -state {WC 0.0}     -state {BC 0.0}
+
+create_supply_net VDD_LEVEL_01
+create_supply_net VDD_LEVEL_02
+create_supply_net VDDPST
+create_supply_net VSS
+
+connect_supply_net VDD_LEVEL_01  -ports {VDD_LEVEL_01}
+connect_supply_net VDD_LEVEL_02 -ports {VDD_LEVEL_02}
+connect_supply_net VDDPST   -ports {VDDPST}
+connect_supply_net VSS      -ports {VSS}
+
+
+if {$syn_option == 1} {
+    connect_supply_net VDDPST  -ports {pad_RTE/VDDPST}
+    connect_supply_net VDD_LEVEL_01 -ports {pad_RTE/VDD}
+    connect_supply_net VSS     -ports {pad_RTE/VSS pad_RTE/VSSPST}
+
+    set ioList_1 [find_objects . -object_type model -pattern {FILL_IN_DIGITAL_IO_PAD_CELL_PATTERN} -transitive TRUE -leaf_only]
+    foreach inst $ioList_1 {
+        connect_supply_net VDD_LEVEL_01  -ports $inst/VDD
+        connect_supply_net VDDPST   -ports $inst/VDDPST
+        connect_supply_net VSS      -ports $inst/VSS
+    }
+
+    set ioList_1 [find_objects . -object_type model -pattern {FILL_IN_POWER_PAD_CELL_PATTERN} -transitive TRUE -leaf_only]
+    foreach inst $ioList_1 {
+        connect_supply_net VDD_LEVEL_01  -ports $inst/VDD
+        connect_supply_net VDDPST   -ports $inst/VDDPST
+        connect_supply_net VSS      -ports $inst/VSS
+    }
+}
+
+
+
+#######################################
+#           PD_core
+#######################################
+set_domain_supply_net PD_core \
+    -primary_power_net VDD_LEVEL_01 \
+    -primary_ground_net VSS
+
+
+set_level_shifter ls_CORE  -domain PD_core          \
+                                -applies_to both    \
+                                -rule both          \
+                                -location self
+
+#######################################
+# PD_TOP
+#######################################
+set_domain_supply_net PD_TOP \
+    -primary_power_net VDD_LEVEL_02 \
+    -primary_ground_net VSS
+
+set_level_shifter ls_TOP  -domain PD_TOP            \
+                                -applies_to both    \
+                                -rule both          \
+                                -location self
+
+#######################################
+# PD_CPU
+#######################################
+if {$CPU_PG_option == 1} {
+    load_upf [file join $UPF_ROOT CPU_PG.upf]
+} else {
+    create_power_domain PD_CPU -elements {u_TOP/u_cpu/u_cpu}
+}
+
+if {$CPU_PG_option == 0} {
+set_domain_supply_net PD_CPU \
+    -primary_power_net VDD_LEVEL_01 \
+    -primary_ground_net VSS
+}
+
+set_level_shifter ls_CPU  -domain PD_CPU            \
+                                -applies_to inputs  \
+                                -rule low_to_high   \
+                                -location parent
+
+if {$CPU_PG_option == 1} {
+set_level_shifter ls_CPU_AON  -domain PD_CPU_ALWY_ON      \
+                                -applies_to inputs         \
+                                -rule low_to_high          \
+                                -location self
+}
+#######################################
+# PD_WDT
+#######################################
+if {$WDT_PG_option == 1} {
+    load_upf [file join $UPF_ROOT WDT_PG.upf]
+
+    # PD_WDT is switchable.  Without an explicit strategy, UPF creates a
+    # default level-shifter strategy with automatic placement.  Force WDT
+    # boundary shifters into the always-on parent domain.
+    set_level_shifter ls_WDT -domain PD_WDT                                 -applies_to both                                 -rule both                                 -location parent
+}

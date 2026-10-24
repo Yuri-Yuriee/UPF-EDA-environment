@@ -1,0 +1,142 @@
+
+# Local private setup, installed process data, generated results and history.
+.private_config/
+**/setup/config/private/
+backup/
+.backup/
+temp_doc/
+build_PR/dbs/
+build_PR/outputs/
+build_PR/reports/
+build_PR/logs/
+build_PR/PR_log/
+build_PR/PR_cmd/
+build_PR/.temp/
+build_PR/temp/
+build_PR/verify/
+build_PR/client_log/
+build_PR/mp_data*/
+build_PR/.cadence/
+build_PR/.tt_iopad_bridge/
+**/ioPADt/build/
+**/__pycache__/
+github_export/
+*.db
+*.lef
+*.lib
+*.gds
+*.gdsii
+*.oas
+*.enc
+*.bin
+*.spi
+*.spice
+*.spef
+*.sdf
+*.map
+*.qrc
+*.tch
+*.tf
+*.io
+*.upf
+*.sdc
+*.rpt
+*.rpt.old
+*.log
+*.logv
+*.cmd
+*.jou
+*.nfs*
+*.pyc
+
+# Historical and native outputs can retain older process values.
+**/backup/
+**/.backup/
+**/history/
+*.log*
+*.cmd*
+*.jou*
+*.rpt*
+*.rule
+*.rul
+*.deck
+*.drc
+*.lvs
+*.lvs_*
+build_PR/query_results
+build_PR/debug_pg_space
+build_PR/golden_mimic_power_mesh.tcl
+build_PR/CHIP_init_shield.rpt
+
+# Compressed process inputs and runtime IO geometry patches.
+*.db.*
+*.lef.*
+*.lib.*
+*.gds.*
+*.gdsii.*
+*.oas.*
+*.enc.*
+*.spi.*
+*.spice.*
+*.spef.*
+*.sdf.*
+*.map.*
+*.qrc.*
+*.tch.*
+*.tf.*
+*.ioPKG.tar
+build_PR/setup/*DB_PATCH.tcl
+build_PR/setup/*IOPAD_EDITED*.tcl
+
+# Local Verify technology/tool resource path configuration.
+**/verify/verify_path.cfg
+
+# Local Verify exclusion/library/spec configuration.
+**/verify/config/private/
+
+# Local non-public documentation and tools.
+**/run/tool/ioPADt/private/
+tools/sh/private/
+
+# Confidential source notes and report snapshots.
+**/private/
+
+# Materialized per-design Runtime setup contains actual private settings.
+build_PR/setup/
+
+# Preserve the existing non-public classification after layout migration.
+/script/PR/TECH_MV/script/99_debug/test.tcl
+
+# Geometry settings and configured golden remain non-public outside private/.
+**/setup/config/geometry_review.config.tcl
+**/setup/config/config_probe.golden.list
+
+# Actual local resource settings remain non-public.
+**/verify/config/verify_path.cfg
+
+**/verify/config/hcell_policy.tcl
+
+# Local technology/library/memory models are never public source.
+/tech/
+
+# Actual canonical Runtime defaults are private; do not publish as templates.
+/script/PR/TECH_MV/setup/
+
+# Reviewed fill-in configuration templates belong in source control.
+!/.private_config/
+!/.private_config/**
+!/script/PR/TECH_MV/setup/
+!/script/PR/TECH_MV/setup/**
+!**/verify/config/verify_path.cfg
+!**/verify/config/hcell_policy.tcl
+# Do not commit filled local overrides or EDA outputs.
+*.local.tcl
+*.local.json
+
+!**/verify/config/private/
+!**/verify/config/private/**
+!**/verify/verify_path.cfg
+
+# Tool-generated pad edits and database patches must not be shared.
+**/*IOPAD_EDITED*
+**/*DB_PATCH*

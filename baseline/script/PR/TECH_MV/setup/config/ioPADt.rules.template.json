@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "profile_id": "",
+  "corner_master_family": "",
+  "master_roles": {},
+  "master_normalization_pattern": "",
+  "query_master_families": [],
+  "query_confirmed_families": [],
+  "signatures": {
+    "boundary_pg_exact": [],
+    "rte_signal_exact": [],
+    "signal_required": [],
+    "power_signal_exact": [],
+    "power_pg_required": []
+  },
+  "rail_defs": {
+    "CORE POWER": {
+      "source_role": "CORE_POWER",
+      "carrier_kind": "pg",
+      "carrier_pin": "",
+      "label": "FILL_IN_root_rail_defs_CORE_POWER_label"
+    },
+    "IO POWER": {
+      "source_role": "IO_POWER",
+      "carrier_kind": "pg",
+      "carrier_pin": "",
+      "label": "FILL_IN_root_rail_defs_IO_POWER_label"
+    },
+    "RTE": {
+      "source_role": "RTE",
+      "carrier_kind": "pin",
+      "carrier_pin": "",
+      "label": "FILL_IN_root_rail_defs_RTE_label"
+    }
+  },
+  "rail_cut_at_boundary": {
+    "CORE POWER": true,
+    "IO POWER": true,
+    "RTE": true
+  },
+  "domain_exclusive_pins": [],
+  "domain_consistent_pins": [],
+  "domain_column_pins": {},
+  "expected_rail_pins": {
+    "CORE POWER": "",
+    "IO POWER": "",
+    "RTE": ""
+  },
+  "ground_expectations": {},
+  "literal_tokens": {}
+}

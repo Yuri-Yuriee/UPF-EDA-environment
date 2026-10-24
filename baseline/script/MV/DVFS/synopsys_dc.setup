@@ -1,0 +1,551 @@
+############################################################
+# TECH CPU-only DVFS + Selectable SYS MV Library Setup
+############################################################
+# Purpose:
+#   - TECH only
+#   - MV flow always enabled
+#   - CPU uses DVFS libraries:
+#       0.9 / 0.72 / 0.675 / 0.5
+#   - SYS library is selectable:
+#       SYS_VOLTAGE = LEVEL_03 / LEVEL_04 / LEVEL_05 / LEVEL_06
+#       SYS_USE_SVT / SYS_USE_LVT / SYS_USE_ULVT
+#   - IO / SRAM / Level Shifter / Power Switch libraries included
+############################################################
+
+
+############################################################
+# Basic Options
+############################################################
+
+set company  "CIC"
+set designer "Student"
+
+set MV_option 1
+set CPU_DVFS_option 1
+
+set CPU_TOP_DESIGN   "CPU_wrapper"
+set CPU_INST_PATTERN "*CPU*"
+
+if {![info exists PT_option]} {
+    set PT_option 0
+}
+# 0 : DC synthesis
+# 1 : PrimeTime
+
+if {![info exists search_path]} {
+    set search_path "."
+}
+
+
+############################################################
+# SYS Library Options
+############################################################
+# SYS_VOLTAGE supported values:
+#   LEVEL_03 / LEVEL_04 / LEVEL_05 / LEVEL_06
+#
+# SYS_USE_SVT / SYS_USE_LVT / SYS_USE_ULVT:
+#   1 : allow this Vt library
+#   0 : do not allow this Vt library
+
+if {![info exists SYS_VOLTAGE]} {
+    set SYS_VOLTAGE "LEVEL_06"
+}
+
+if {![info exists SYS_USE_SVT]} {
+    set SYS_USE_SVT 1
+}
+
+if {![info exists SYS_USE_LVT]} {
+    set SYS_USE_LVT 0
+}
+
+if {![info exists SYS_USE_ULVT]} {
+    set SYS_USE_ULVT 0
+}
+
+
+############################################################
+# TECH Path Setup
+############################################################
+
+set TECH_CORE_ROOT /FILL_IN/FILL_IN_RESOURCE_0108
+
+set TECH_IO_ROOT /FILL_IN/FILL_IN_RESOURCE_0109
+
+set SVT_Path  $TECH_CORE_ROOT/FILL_IN_LIBRARY_0110
+set LVT_Path  $TECH_CORE_ROOT/FILL_IN_LIBRARY_0111
+set ULVT_Path $TECH_CORE_ROOT/FILL_IN_LIBRARY_0112
+set LVL_Path  $TECH_CORE_ROOT/FILL_IN_LIBRARY_0113
+set PM_Path   $TECH_CORE_ROOT/FILL_IN_LIBRARY_0114
+
+set IO_Path $TECH_IO_ROOT/FILL_IN_LIBRARY_0115
+
+set MEM_Path [list \
+    /FILL_IN/FILL_IN_RESOURCE_0116 \
+    /FILL_IN/FILL_IN_RESOURCE_0117 \
+    /FILL_IN/FILL_IN_RESOURCE_0118 \
+]
+
+set DefintionPath ../include
+
+set search_path [concat \
+    [list $SVT_Path $LVT_Path $ULVT_Path $LVL_Path $PM_Path $IO_Path $DefintionPath] \
+    $MEM_Path $PL_Path \
+    $search_path \
+]
+
+
+############################################################
+# TLU+ Path
+############################################################
+
+set PL_Path [list \
+    /FILL_IN/FILL_IN_RESOURCE_0119 \
+    /FILL_IN/FILL_IN_RESOURCE_0120 \
+]
+
+
+############################################################
+# Synthetic Library
+############################################################
+
+if {$PT_option == 1} {
+    set synthetic_library ""
+    set symbol_library "generic_sdb"
+} else {
+    set synthetic_library "dw_foundation.sldb"
+    set symbol_library "generic_sdb"
+}
+
+
+############################################################
+# CPU / SYS Core Standard Cell Libraries
+############################################################
+# SVT
+
+set LIB_SVT_LEVEL_03    FILL_IN_LIBRARY_0121
+set LIB_SVT_LEVEL_04   FILL_IN_LIBRARY_0074
+set LIB_SVT_LEVEL_05  FILL_IN_LIBRARY_0122
+set LIB_SVT_LEVEL_06    FILL_IN_LIBRARY_0081
+
+# LVT
+
+set LIB_LVT_LEVEL_03    FILL_IN_LIBRARY_0123
+set LIB_LVT_LEVEL_04   FILL_IN_LIBRARY_0076
+set LIB_LVT_LEVEL_05  FILL_IN_LIBRARY_0124
+set LIB_LVT_LEVEL_06    FILL_IN_LIBRARY_0125
+
+# ULVT
+
+set LIB_ULVT_LEVEL_03   FILL_IN_LIBRARY_0126
+set LIB_ULVT_LEVEL_04  FILL_IN_LIBRARY_0075
+set LIB_ULVT_LEVEL_05 FILL_IN_LIBRARY_0127
+set LIB_ULVT_LEVEL_06   FILL_IN_LIBRARY_0128
+
+
+############################################################
+# IO / SRAM Fixed Libraries
+############################################################
+# IO and SRAM are kept at fixed 0.72V setting.
+
+set LIB_IO_LEVEL_04 FILL_IN_LIBRARY_0082
+
+set LIB_MEM_LEVEL_04 [list \
+    FILL_IN_LIBRARY_0086 \
+    FILL_IN_LIBRARY_0087 \
+    FILL_IN_LIBRARY_0088 \
+]
+
+
+############################################################
+# MV Special Cell Libraries
+############################################################
+# CPU DVFS voltage can go down to 0.5V.
+# SYS can be selected by SYS_VOLTAGE.
+# Level shifter and power switch libraries are included.
+
+set LIB_LVL_LEVEL_06_TO_LEVEL_04 FILL_IN_LIBRARY_0077
+set LIB_LVL_LEVEL_04_TO_LEVEL_06 FILL_IN_LIBRARY_0078
+
+set LIB_PM_LEVEL_04 FILL_IN_LIBRARY_0080
+set LIB_PM_LEVEL_06  FILL_IN_LIBRARY_0079
+
+
+############################################################
+# Library Groups
+############################################################
+
+set CPU_CORE_LIB_DVFS [list \
+    $LIB_SVT_LEVEL_03 \
+    $LIB_SVT_LEVEL_04 \
+    $LIB_SVT_LEVEL_05 \
+    $LIB_SVT_LEVEL_06 \
+    $LIB_LVT_LEVEL_03 \
+    $LIB_LVT_LEVEL_04 \
+    $LIB_LVT_LEVEL_05 \
+    $LIB_LVT_LEVEL_06 \
+    $LIB_ULVT_LEVEL_03 \
+    $LIB_ULVT_LEVEL_04 \
+    $LIB_ULVT_LEVEL_05 \
+    $LIB_ULVT_LEVEL_06 \
+]
+
+set IO_MEM_LIB [concat \
+    [list $LIB_IO_LEVEL_04] \
+    $LIB_MEM_LEVEL_04 \
+]
+
+set MV_LIB [list \
+    $LIB_LVL_LEVEL_06_TO_LEVEL_04 \
+    $LIB_LVL_LEVEL_04_TO_LEVEL_06 \
+    $LIB_PM_LEVEL_04 \
+    $LIB_PM_LEVEL_06 \
+]
+
+
+############################################################
+# Build SYS Core Library by User Option
+############################################################
+
+proc build_sys_core_lib {} {
+    global SYS_VOLTAGE
+    global SYS_USE_SVT SYS_USE_LVT SYS_USE_ULVT
+
+    global LIB_SVT_LEVEL_03 LIB_SVT_LEVEL_04 LIB_SVT_LEVEL_05 LIB_SVT_LEVEL_06
+    global LIB_LVT_LEVEL_03 LIB_LVT_LEVEL_04 LIB_LVT_LEVEL_05 LIB_LVT_LEVEL_06
+    global LIB_ULVT_LEVEL_03 LIB_ULVT_LEVEL_04 LIB_ULVT_LEVEL_05 LIB_ULVT_LEVEL_06
+
+    set sys_lib [list]
+
+    switch -- $SYS_VOLTAGE {
+
+        "LEVEL_03" {
+            if {$SYS_USE_SVT}  { lappend sys_lib $LIB_SVT_LEVEL_03 }
+            if {$SYS_USE_LVT}  { lappend sys_lib $LIB_LVT_LEVEL_03 }
+            if {$SYS_USE_ULVT} { lappend sys_lib $LIB_ULVT_LEVEL_03 }
+        }
+
+        "LEVEL_04" {
+            if {$SYS_USE_SVT}  { lappend sys_lib $LIB_SVT_LEVEL_04 }
+            if {$SYS_USE_LVT}  { lappend sys_lib $LIB_LVT_LEVEL_04 }
+            if {$SYS_USE_ULVT} { lappend sys_lib $LIB_ULVT_LEVEL_04 }
+        }
+
+        "LEVEL_05" {
+            if {$SYS_USE_SVT}  { lappend sys_lib $LIB_SVT_LEVEL_05 }
+            if {$SYS_USE_LVT}  { lappend sys_lib $LIB_LVT_LEVEL_05 }
+            if {$SYS_USE_ULVT} { lappend sys_lib $LIB_ULVT_LEVEL_05 }
+        }
+
+        "LEVEL_06" {
+            if {$SYS_USE_SVT}  { lappend sys_lib $LIB_SVT_LEVEL_06 }
+            if {$SYS_USE_LVT}  { lappend sys_lib $LIB_LVT_LEVEL_06 }
+            if {$SYS_USE_ULVT} { lappend sys_lib $LIB_ULVT_LEVEL_06 }
+        }
+
+        default {
+            puts "ERROR: unsupported SYS_VOLTAGE = $SYS_VOLTAGE"
+            puts "ERROR: supported SYS_VOLTAGE values: LEVEL_03 / LEVEL_04 / LEVEL_05 / LEVEL_06"
+            error "Invalid SYS_VOLTAGE"
+        }
+    }
+
+    if {[llength $sys_lib] == 0} {
+        puts "ERROR: SYS library is empty."
+        puts "ERROR: enable at least one of SYS_USE_SVT / SYS_USE_LVT / SYS_USE_ULVT."
+        error "Empty SYS library"
+    }
+
+    return $sys_lib
+}
+
+
+
+############################################################
+# Min Library Setup
+############################################################
+
+############################################################
+# Min Library Setup
+############################################################
+
+proc setup_tech_dvfs_min_library {} {
+    global LIB_SVT_LEVEL_03 LIB_SVT_LEVEL_04 LIB_SVT_LEVEL_05 LIB_SVT_LEVEL_06
+    global LIB_LVT_LEVEL_03 LIB_LVT_LEVEL_04 LIB_LVT_LEVEL_05 LIB_LVT_LEVEL_06
+    global LIB_ULVT_LEVEL_03 LIB_ULVT_LEVEL_04 LIB_ULVT_LEVEL_05 LIB_ULVT_LEVEL_06
+    global LIB_IO_LEVEL_04
+    global LIB_LVL_LEVEL_06_TO_LEVEL_04 LIB_LVL_LEVEL_04_TO_LEVEL_06
+    global LIB_PM_LEVEL_04 LIB_PM_LEVEL_06
+
+    ########################################################
+    # CPU / SYS core min libraries
+    ########################################################
+
+    set_min_library $LIB_SVT_LEVEL_03 \
+        -min_version FILL_IN_LIBRARY_0129
+
+    set_min_library $LIB_LVT_LEVEL_03 \
+        -min_version FILL_IN_LIBRARY_0130
+
+    set_min_library $LIB_ULVT_LEVEL_03 \
+        -min_version FILL_IN_LIBRARY_0131
+
+
+    set_min_library $LIB_SVT_LEVEL_04 \
+        -min_version FILL_IN_LIBRARY_0093
+
+    set_min_library $LIB_LVT_LEVEL_04 \
+        -min_version FILL_IN_LIBRARY_0094
+
+    set_min_library $LIB_ULVT_LEVEL_04 \
+        -min_version FILL_IN_LIBRARY_0095
+
+
+    set_min_library $LIB_SVT_LEVEL_05 \
+        -min_version FILL_IN_LIBRARY_0132
+
+    set_min_library $LIB_LVT_LEVEL_05 \
+        -min_version FILL_IN_LIBRARY_0133
+
+    set_min_library $LIB_ULVT_LEVEL_05 \
+        -min_version FILL_IN_LIBRARY_0134
+
+
+    set_min_library $LIB_SVT_LEVEL_06 \
+        -min_version FILL_IN_LIBRARY_0096
+
+    set_min_library $LIB_LVT_LEVEL_06 \
+        -min_version FILL_IN_LIBRARY_0135
+
+    set_min_library $LIB_ULVT_LEVEL_06 \
+        -min_version FILL_IN_LIBRARY_0136
+
+
+    ########################################################
+    # IO min library
+    ########################################################
+
+    set_min_library $LIB_IO_LEVEL_04 \
+        -min_version FILL_IN_LIBRARY_0097
+
+
+    ########################################################
+    # SRAM min libraries
+    ########################################################
+
+    set_min_library FILL_IN_LIBRARY_0086 \
+        -min_version FILL_IN_LIBRARY_0137
+
+    set_min_library FILL_IN_LIBRARY_0087 \
+        -min_version FILL_IN_LIBRARY_0138
+
+    set_min_library FILL_IN_LIBRARY_0088 \
+        -min_version FILL_IN_LIBRARY_0139
+
+
+    ########################################################
+    # Level shifter / power switch min libraries
+    ########################################################
+
+    set_min_library $LIB_LVL_LEVEL_06_TO_LEVEL_04 \
+        -min_version FILL_IN_LIBRARY_0101
+
+    set_min_library $LIB_LVL_LEVEL_04_TO_LEVEL_06 \
+        -min_version FILL_IN_LIBRARY_0102
+
+    set_min_library $LIB_PM_LEVEL_04 \
+        -min_version FILL_IN_LIBRARY_0104
+
+    set_min_library $LIB_PM_LEVEL_06 \
+        -min_version FILL_IN_LIBRARY_0103
+}
+
+
+############################################################
+# CPU DVFS Compile Mode
+############################################################
+# Use this before compiling CPU block.
+#
+# CPU can use:
+#   SVT / LVT / ULVT
+#   0.9 / 0.72 / 0.675 / 0.5
+#
+# IO / MEM / MV / SYS selected libs are included for link.
+
+proc setup_cpu_dvfs_library {} {
+    global CPU_CORE_LIB_DVFS
+    global IO_MEM_LIB
+    global MV_LIB
+    global synthetic_library
+    global target_library
+    global link_library
+
+    puts "INFO: setup CPU DVFS library"
+
+    set SYS_CORE_LIB_SELECTED [build_sys_core_lib]
+
+    set target_library [concat \
+        $CPU_CORE_LIB_DVFS \
+        $MV_LIB \
+    ]
+
+    set link_library [concat \
+        [list *] \
+        $CPU_CORE_LIB_DVFS \
+        $SYS_CORE_LIB_SELECTED \
+        $IO_MEM_LIB \
+        $MV_LIB \
+    ]
+
+    if {$synthetic_library ne ""} {
+        lappend link_library $synthetic_library
+    }
+
+    setup_tech_dvfs_min_library
+
+    puts "INFO: CPU target_library = $target_library"
+    puts "INFO: CPU link_library   = $link_library"
+}
+
+
+############################################################
+# SYS / Top Selected MV Compile Mode
+############################################################
+# Use this before compiling CHIP / top.
+#
+# SYS library depends on:
+#   SYS_VOLTAGE
+#   SYS_USE_SVT
+#   SYS_USE_LVT
+#   SYS_USE_ULVT
+#
+# CPU DVFS libs are only in link_library,
+# so top can link CPU netlist but will not map SYS logic
+# to all CPU DVFS libraries.
+
+proc setup_sys_selected_mv_library {} {
+    global CPU_CORE_LIB_DVFS
+    global IO_MEM_LIB
+    global MV_LIB
+    global synthetic_library
+    global target_library
+    global link_library
+    global SYS_VOLTAGE
+    global SYS_USE_SVT SYS_USE_LVT SYS_USE_ULVT
+
+    puts "INFO: setup SYS selected MV library"
+    puts "INFO: SYS_VOLTAGE  = $SYS_VOLTAGE"
+    puts "INFO: SYS_USE_SVT  = $SYS_USE_SVT"
+    puts "INFO: SYS_USE_LVT  = $SYS_USE_LVT"
+    puts "INFO: SYS_USE_ULVT = $SYS_USE_ULVT"
+
+    set SYS_CORE_LIB_SELECTED [build_sys_core_lib]
+
+    set target_library [concat \
+        $SYS_CORE_LIB_SELECTED \
+        $MV_LIB \
+    ]
+
+    set link_library [concat \
+        [list *] \
+        $SYS_CORE_LIB_SELECTED \
+        $IO_MEM_LIB \
+        $MV_LIB \
+        $CPU_CORE_LIB_DVFS \
+    ]
+
+    if {$synthetic_library ne ""} {
+        lappend link_library $synthetic_library
+    }
+
+    setup_tech_dvfs_min_library
+
+    puts "INFO: SYS target_library = $target_library"
+    puts "INFO: SYS link_library   = $link_library"
+}
+
+
+############################################################
+# Backward Compatible Alias
+############################################################
+
+proc setup_sys_fixed_mv_library {} {
+    setup_sys_selected_mv_library
+}
+
+
+############################################################
+# Protect CPU Instance
+############################################################
+# Use this before top compile if CPU has been synthesized separately.
+
+proc protect_cpu_instance {} {
+    global CPU_INST_PATTERN
+
+    set cpu_cells [get_cells -hier $CPU_INST_PATTERN]
+
+    if {[sizeof_collection $cpu_cells] > 0} {
+        puts "INFO: set_dont_touch CPU instance pattern: $CPU_INST_PATTERN"
+        set_dont_touch $cpu_cells
+    } else {
+        puts "WARN: no CPU instance matched pattern: $CPU_INST_PATTERN"
+    }
+}
+
+
+############################################################
+# Dont Use PM Test Cells
+############################################################
+
+proc setup_mv_dont_use {} {
+    set_dont_use "FILL_IN_LIBRARY_0089/PT*"
+    set_dont_use "FILL_IN_LIBRARY_0090/PT*"
+    set_dont_use "FILL_IN_LIBRARY_0091/PT*"
+    set_dont_use "FILL_IN_LIBRARY_0092/PT*"
+}
+
+
+############################################################
+# Default Corner Variables
+############################################################
+
+set min_lib [list \
+    FILL_IN_LIBRARY_0140 \
+    FILL_IN_LIBRARY_0141 \
+    FILL_IN_LIBRARY_0142 \
+    FILL_IN_LIBRARY_0143 \
+]
+
+set max_lib [list \
+    FILL_IN_LIBRARY_0144 \
+    FILL_IN_LIBRARY_0145 \
+    FILL_IN_LIBRARY_0146 \
+    FILL_IN_LIBRARY_0147 \
+]
+
+# 請填入 library 的 PVT corner 名稱
+set min_condi FILL_IN_PVT_CORNER_526_14
+# 請填入 library 的 PVT corner 名稱
+set max_condi FILL_IN_PVT_CORNER_527_14
+
+
+############################################################
+# Tool Behavior
+############################################################
+
+set verilogout_no_tri true
+set hdlin_enable_presto_for_vhdl "TRUE"
+set sh_enable_line_editing true
+history keep 100
+alias h history
+
+
+############################################################
+# Default Mode
+############################################################
+# Default is SYS selected MV mode.
+# SYS library depends on SYS_VOLTAGE and SYS_USE_*.
+# This prevents whole-chip mapping to all CPU DVFS libraries by mistake.
+
+setup_sys_selected_mv_library
+setup_mv_dont_use

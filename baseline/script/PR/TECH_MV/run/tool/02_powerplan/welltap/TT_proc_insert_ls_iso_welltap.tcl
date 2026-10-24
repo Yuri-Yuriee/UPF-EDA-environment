@@ -1,0 +1,995 @@
+# Runtime adapter preserves the historical logical source path.
+if {[info exists ::TECH_MV_RUNTIME_ROOT]} {
+    info script [file join $::TECH_MV_RUNTIME_ROOT run/tool/02_powerplan/welltap/TT_proc_insert_ls_iso_welltap.tcl]
+}
+# Load definitions only; no APR action or setup reload is performed here.
+if {![llength [info commands ::tech_mv_library_value]]} {
+    if {[info exists ::TOOL_DIR]} {
+        source -quiet [file join $::TECH_MV_RUNTIME_ROOT .. script PR TECH_MV script 00_common private_parameter_config.tcl]
+    } else {
+        source -quiet [file join $::TECH_MV_RUNTIME_ROOT .. script PR TECH_MV script 00_common private_parameter_config.tcl]
+    }
+}
+# PUBLIC_EXPORT_REVIEW_REQUIRED: residual technology candidates require manual review.
+# =============================================================================
+# TT_proc_insert_ls_iso_welltap_v8.tcl
+# TECH_MV / Innovus Common UI
+#
+# V8 changes
+# ----------
+# 1. LS / ISO classification uses ONLY DB properties:
+#      get_db $inst .is_level_shifter
+#      get_db $inst .is_isolation
+#    NO name-pattern detection for ISO.
+#
+# 2. WellTap Power Domain is taken from the two bounding LS/ISO cells:
+#      left.power_domain.name == right.power_domain.name
+#    If they differ or are empty -> SKIP.
+#
+# 3. Do NOT modify Power-Domain associated groups with update_group.
+#    That is illegal and causes IMPSYC-6319.
+#
+# 4. Use Innovus native:
+#      add_well_taps -cell ... -area {...} -cell_interval <tap_width> -power_domain <PD>
+#    so Innovus itself creates the WellTap in the requested Power Domain.
+#
+# 5. Generated taps are tagged with user DB attribute:
+#      .tt_lsiso_generated == true
+#    so reruns do not depend on names.
+#
+# 6. Generated WellTap-to-WellTap overlap cleanup:
+#      - existing/original WellTap always wins
+#      - generated-vs-generated: keep first, delete later one
+#      - abutment is NOT overlap
+#
+# Intended stage:
+#   AFTER placement is stable
+#   BEFORE filler insertion
+#
+# Geometry is derived from the configured runtime library:
+#   tap_w    = configured library cell physical width
+#   site_w   = selected core-site width
+#   tap_sites = round(tap_w / site_w)
+# =============================================================================
+
+set ::TT_LS_ISO_WELLTAP_VERSION "V8.2_NATIVE_PD_CELL_INTERVAL"
+
+if {![info exists ::ENABLE_LS_ISO_PRE_FILLER_WELLTAP]} {
+    set ::ENABLE_LS_ISO_PRE_FILLER_WELLTAP true
+}
+
+if {![info exists ::LS_ISO_WELLTAP_MASTER]} {
+    set ::LS_ISO_WELLTAP_MASTER [::tech_mv_library_value LIB_CELL_002]
+}
+
+if {![info exists ::LS_ISO_WELLTAP_SITE]} {
+    set ::LS_ISO_WELLTAP_SITE core
+}
+
+if {![info exists ::LS_ISO_WELLTAP_RUN_CHECK_PLACE]} {
+    set ::LS_ISO_WELLTAP_RUN_CHECK_PLACE true
+}
+
+# Backward cleanup only for old V3~V7 generated instances.
+# This is NOT used for LS/ISO classification.
+if {![info exists ::LS_ISO_OLD_PREFIX]} {
+    set ::LS_ISO_OLD_PREFIX AUTO_LSISO_WT
+}
+
+
+# -----------------------------------------------------------------------------
+# Basic helpers
+# -----------------------------------------------------------------------------
+
+proc TT_lsiso_wt__bool_true {v} {
+    set s [string tolower [string trim $v]]
+    return [expr {
+        $s eq "true" ||
+        $s eq "1"    ||
+        $s eq "yes"
+    }]
+}
+
+
+proc TT_lsiso_wt__bbox4 {bbox} {
+    if {[llength $bbox] == 1} {
+        set bbox [lindex $bbox 0]
+    }
+
+    if {[llength $bbox] != 4} {
+        return ""
+    }
+
+    return $bbox
+}
+
+
+proc TT_lsiso_wt__site_size2 {v} {
+    if {[llength $v] == 1} {
+        set v [lindex $v 0]
+    }
+
+    if {[llength $v] != 2} {
+        return ""
+    }
+
+    return $v
+}
+
+
+proc TT_lsiso_wt__inst_name {obj} {
+    set name ""
+    catch {set name [get_db $obj .name]}
+    return $name
+}
+
+
+proc TT_lsiso_wt__inst_bbox {obj} {
+    set bbox ""
+    catch {set bbox [get_db $obj .bbox]}
+    return [TT_lsiso_wt__bbox4 $bbox]
+}
+
+
+proc TT_lsiso_wt__inst_pd {obj} {
+    set pd ""
+    catch {set pd [get_db $obj .power_domain.name]}
+    return $pd
+}
+
+
+proc TT_lsiso_wt__append_unique {var_name value} {
+    upvar 1 $var_name L
+
+    if {[lsearch -exact $L $value] < 0} {
+        lappend L $value
+    }
+}
+
+
+proc TT_lsiso_wt__strict_bbox_overlap {a b {eps 1.0e-6}} {
+    if {[llength $a] != 4 || [llength $b] != 4} {
+        return 0
+    }
+
+    lassign $a ax1 ay1 ax2 ay2
+    lassign $b bx1 by1 bx2 by2
+
+    set ox [expr {min($ax2,$bx2) - max($ax1,$bx1)}]
+    set oy [expr {min($ay2,$by2) - max($ay1,$by1)}]
+
+    return [expr {$ox > $eps && $oy > $eps}]
+}
+
+
+proc TT_lsiso_wt__row_orient_for_tap {inst} {
+    set orient r0
+
+    catch {
+        set orient [string tolower [get_db $inst .orient]]
+    }
+
+    switch -- $orient {
+        mx -
+        r180 {
+            return mx
+        }
+
+        default {
+            return r0
+        }
+    }
+}
+
+
+# -----------------------------------------------------------------------------
+# User attribute used to track ONLY taps generated by this proc.
+# -----------------------------------------------------------------------------
+
+proc TT_lsiso_wt__ensure_generated_attribute {} {
+
+    set attr_name tt_lsiso_generated
+
+    # Detect an existing definition first.  Older TECH_MV checkpoints may
+    # contain a persistent version of this helper attribute.  V2.0 migrates it
+    # to -skip_in_db while preserving all TRUE instance values.
+    set exists 0
+    if {[llength [info commands is_attribute]] > 0} {
+        catch {set exists [is_attribute $attr_name -obj_type inst]}
+    } else {
+        # Compatibility fallback for releases where is_attribute is unavailable.
+        set probe [lindex [get_db insts] 0]
+        if {$probe ne "" && ![catch {get_db $probe .$attr_name}]} {
+            set exists 1
+        }
+    }
+
+    if {$exists} {
+        set attr_obj ""
+        catch {set attr_obj [get_db attributes inst/$attr_name]}
+
+        set skip_in_db false
+        if {$attr_obj ne ""} {
+            catch {set skip_in_db [get_db $attr_obj .skip_in_db]}
+        }
+        if {[TT_lsiso_wt__bool_true $skip_in_db]} {
+            return 1
+        }
+
+        # Preserve the semantic tracking values before replacing the schema.
+        set marked_names {}
+        foreach inst [get_db insts] {
+            set marked false
+            if {![catch {set marked [get_db $inst .$attr_name]}] && [TT_lsiso_wt__bool_true $marked]} {
+                set n ""
+                catch {set n [get_db $inst .name]}
+                if {$n ne ""} { lappend marked_names $n }
+            }
+        }
+
+        if {$attr_obj eq ""} {
+            puts "ERROR: Attribute inst/$attr_name exists but its DB object cannot be resolved."
+            return 0
+        }
+        if {[catch {delete_obj $attr_obj} err]} {
+            puts "ERROR: Cannot migrate custom attribute .$attr_name to -skip_in_db:"
+            puts "       $err"
+            return 0
+        }
+
+        if {[catch {
+            define_attribute $attr_name \
+                -category TT \
+                -data_type bool \
+                -obj_type inst \
+                -skip_in_db
+        } err]} {
+            puts "ERROR: Cannot redefine custom attribute .$attr_name as transient:"
+            puts "       $err"
+            return 0
+        }
+
+        set restored 0
+        foreach n $marked_names {
+            set obj [get_db insts $n]
+            if {[llength $obj] == 1} {
+                if {![catch {set_db $obj .$attr_name true}]} {
+                    incr restored
+                }
+            }
+        }
+        puts "INFO: Migrated .$attr_name to -skip_in_db; preserved $restored/[llength $marked_names] TRUE values."
+        return 1
+    }
+
+    # New definition: session-only.  Cadence -skip_in_db prevents write_db
+    # from serializing this helper schema into Floorplan/PowerPlan checkpoints.
+    if {[catch {
+        define_attribute $attr_name \
+            -category TT \
+            -data_type bool \
+            -obj_type inst \
+            -skip_in_db
+    } err]} {
+        puts "ERROR: Cannot define custom instance attribute .$attr_name:"
+        puts "       $err"
+        return 0
+    }
+
+    return 1
+}
+
+
+proc TT_lsiso_wt__is_generated {obj} {
+    set v false
+
+    if {[catch {
+        set v [get_db $obj .tt_lsiso_generated]
+    }]} {
+        return 0
+    }
+
+    return [TT_lsiso_wt__bool_true $v]
+}
+
+
+# -----------------------------------------------------------------------------
+# Tap queries
+# -----------------------------------------------------------------------------
+
+proc TT_lsiso_wt__all_tap_objs {} {
+    set master $::LS_ISO_WELLTAP_MASTER
+    set out {}
+
+    foreach obj [get_db insts] {
+        set base ""
+        catch {set base [get_db $obj .base_cell.name]}
+
+        if {$base eq $master} {
+            lappend out $obj
+        }
+    }
+
+    return $out
+}
+
+
+proc TT_lsiso_wt__obj_key {obj} {
+    # DPO string is stable enough for before/after set difference.
+    return "$obj"
+}
+
+
+# -----------------------------------------------------------------------------
+# Cleanup old generated taps
+# -----------------------------------------------------------------------------
+
+proc TT_proc_cleanup_ls_iso_welltaps {} {
+
+    if {![TT_lsiso_wt__ensure_generated_attribute]} {
+        error "Required custom attribute .tt_lsiso_generated is unavailable."
+    }
+
+    set victims {}
+
+    foreach obj [get_db insts] {
+        set name [TT_lsiso_wt__inst_name $obj]
+
+        set generated [TT_lsiso_wt__is_generated $obj]
+
+        # Backward compatibility cleanup for old V3~V7 output only.
+        set old_generated 0
+        if {$name ne "" &&
+            [string match "${::LS_ISO_OLD_PREFIX}_*" $name]} {
+            set old_generated 1
+        }
+
+        if {$generated || $old_generated} {
+            TT_lsiso_wt__append_unique victims $name
+        }
+    }
+
+    if {[llength $victims] == 0} {
+        puts "INFO: No stale LS/ISO generated WellTaps found."
+        return 0
+    }
+
+    puts ""
+    puts "======================================================================"
+    puts " CLEAN STALE LS/ISO GENERATED WELLTAPS"
+    puts "======================================================================"
+    puts "Found : [llength $victims]"
+
+    set deleted 0
+    set failed 0
+
+    foreach name $victims {
+        if {$name eq ""} {
+            continue
+        }
+
+        if {[catch {
+            delete_inst -inst $name -verbose
+        } err]} {
+            puts "WARNING: Failed to delete stale generated tap: $name"
+            puts "         $err"
+            incr failed
+        } else {
+            incr deleted
+        }
+    }
+
+    puts "Deleted : $deleted"
+    puts "Failed  : $failed"
+    puts "======================================================================"
+
+    if {$failed != 0} {
+        error "Cannot continue: stale generated WellTap cleanup failed."
+    }
+
+    return $deleted
+}
+
+
+# -----------------------------------------------------------------------------
+# Collect LS / ISO using DB attributes ONLY.
+# -----------------------------------------------------------------------------
+
+proc TT_lsiso_wt__collect_special {special_kind_array_name} {
+
+    upvar 1 $special_kind_array_name special_kind
+    catch {array unset special_kind}
+
+    set ls_names {}
+    set iso_names {}
+
+    foreach inst [get_db insts] {
+
+        # Never allow WellTap itself into LS/ISO classification.
+        set base ""
+        catch {set base [get_db $inst .base_cell.name]}
+
+        if {$base eq $::LS_ISO_WELLTAP_MASTER} {
+            continue
+        }
+
+        set name [TT_lsiso_wt__inst_name $inst]
+
+        if {$name eq ""} {
+            continue
+        }
+
+        set is_ls false
+        set is_iso false
+
+        # EXACTLY DB attribute based classification.
+        catch {
+            set is_ls [get_db $inst .is_level_shifter]
+        }
+
+        catch {
+            set is_iso [get_db $inst .is_isolation]
+        }
+
+        if {[TT_lsiso_wt__bool_true $is_ls]} {
+            set special_kind($name) LS
+            TT_lsiso_wt__append_unique ls_names $name
+            continue
+        }
+
+        if {[TT_lsiso_wt__bool_true $is_iso]} {
+            set special_kind($name) ISO
+            TT_lsiso_wt__append_unique iso_names $name
+            continue
+        }
+    }
+
+    return [list $ls_names $iso_names]
+}
+
+
+# -----------------------------------------------------------------------------
+# Insert ONE WellTap into one exact requested box using native add_well_taps.
+#
+# Power Domain is passed directly to Innovus:
+#   add_well_taps ... -power_domain $target_pd
+#
+# Returns newly inserted tap object on success, "" on failure.
+# -----------------------------------------------------------------------------
+
+proc TT_lsiso_wt__native_insert_one {tap_bbox target_pd} {
+
+    set tap_master $::LS_ISO_WELLTAP_MASTER
+
+    # Snapshot all tap DPOs before insertion.
+    array unset before
+    foreach obj [TT_lsiso_wt__all_tap_objs] {
+        set before([TT_lsiso_wt__obj_key $obj]) 1
+    }
+
+    if {[catch {
+        # This Innovus release requires -cell_interval.
+        # Use exactly one tap-cell width; the requested -area is already
+        # constrained to an insertion window spanning one Welltap width and one placement row.
+        set tap_master_bbox [TT_lsiso_wt__bbox4 \
+            [get_db base_cell:$tap_master .bbox]]
+
+        if {$tap_master_bbox eq ""} {
+            error "Cannot determine WellTap master bbox for $tap_master"
+        }
+
+        lassign $tap_master_bbox \
+            tap_llx tap_lly tap_urx tap_ury
+
+        set tap_interval [expr {$tap_urx - $tap_llx}]
+
+        add_well_taps \
+            -cell $tap_master \
+            -area $tap_bbox \
+            -cell_interval $tap_interval \
+            -power_domain $target_pd
+    } err]} {
+        puts "WARNING: add_well_taps failed:"
+        puts "         PD=$target_pd AREA=$tap_bbox"
+        puts "         $err"
+        return ""
+    }
+
+    # Find exactly what Innovus added.
+    set new_objs {}
+
+    foreach obj [TT_lsiso_wt__all_tap_objs] {
+        set key [TT_lsiso_wt__obj_key $obj]
+
+        if {![info exists before($key)]} {
+            lappend new_objs $obj
+        }
+    }
+
+    if {[llength $new_objs] == 0} {
+        puts "WARNING: add_well_taps added no $tap_master in requested area."
+        puts "         PD=$target_pd AREA=$tap_bbox"
+        return ""
+    }
+
+    # A one-Welltap-width insertion window on a single placement row should result in one tap.
+    # If tool inserted more, keep only the first tap inside this exact area.
+    set keeper ""
+    set extras {}
+
+    foreach obj $new_objs {
+        set bbox [TT_lsiso_wt__inst_bbox $obj]
+
+        if {$keeper eq "" && $bbox ne ""} {
+            set keeper $obj
+        } else {
+            lappend extras $obj
+        }
+    }
+
+    foreach obj $extras {
+        set n [TT_lsiso_wt__inst_name $obj]
+        if {$n ne ""} {
+            catch {delete_inst -inst $n -verbose}
+        }
+    }
+
+    if {$keeper eq ""} {
+        puts "WARNING: add_well_taps produced unusable tap object(s)."
+        return ""
+    }
+
+    # Mark as ours.
+    catch {
+        set_db $keeper .tt_lsiso_generated true
+    }
+
+    # Keep it fixed.
+    catch {
+        set_db $keeper .place_status fixed
+    }
+
+    # Native -power_domain must resolve correctly.
+    set actual_pd [TT_lsiso_wt__inst_pd $keeper]
+
+    if {$actual_pd ne $target_pd} {
+        set n [TT_lsiso_wt__inst_name $keeper]
+
+        puts "WARNING: Native add_well_taps PD mismatch:"
+        puts "         inst=$n expected=$target_pd actual=$actual_pd"
+
+        if {$n ne ""} {
+            catch {delete_inst -inst $n -verbose}
+        }
+
+        return ""
+    }
+
+    return $keeper
+}
+
+
+# -----------------------------------------------------------------------------
+# Delete ONLY generated taps that overlap another WellTap.
+# Existing/original WellTap always wins.
+# -----------------------------------------------------------------------------
+
+proc TT_proc_cleanup_generated_welltap_overlaps {} {
+
+    set existing {}
+    set generated {}
+
+    foreach obj [TT_lsiso_wt__all_tap_objs] {
+        set name [TT_lsiso_wt__inst_name $obj]
+
+        if {[TT_lsiso_wt__is_generated $obj]} {
+            lappend generated [list $name $obj]
+        } else {
+            lappend existing [list $name $obj]
+        }
+    }
+
+    set survivors $existing
+    set victims {}
+
+    foreach item [lsort -dictionary -index 0 $generated] {
+
+        lassign $item name obj
+        set bbox [TT_lsiso_wt__inst_bbox $obj]
+
+        if {$bbox eq ""} {
+            continue
+        }
+
+        set conflict ""
+
+        foreach s $survivors {
+            lassign $s sname sobj
+            set sbbox [TT_lsiso_wt__inst_bbox $sobj]
+
+            if {$sbbox eq ""} {
+                continue
+            }
+
+            if {[TT_lsiso_wt__strict_bbox_overlap $bbox $sbbox]} {
+                set conflict $sname
+                break
+            }
+        }
+
+        if {$conflict ne ""} {
+            lappend victims [list $name $conflict]
+        } else {
+            lappend survivors $item
+        }
+    }
+
+    puts ""
+    puts "======================================================================"
+    puts " GENERATED WELLTAP OVERLAP CLEANUP"
+    puts "======================================================================"
+    puts "Existing/original WellTaps : [llength $existing]"
+    puts "Generated WellTaps         : [llength $generated]"
+    puts "Generated overlap victims  : [llength $victims]"
+
+    set deleted 0
+    set failed 0
+
+    foreach pair $victims {
+        lassign $pair victim keeper
+
+        puts "DELETE generated overlap: $victim  overlaps  $keeper"
+
+        if {[catch {
+            delete_inst -inst $victim -verbose
+        } err]} {
+            puts "WARNING: Failed to delete $victim:"
+            puts "         $err"
+            incr failed
+        } else {
+            incr deleted
+        }
+    }
+
+    puts "Deleted                 : $deleted"
+    puts "Delete failures         : $failed"
+    puts "======================================================================"
+
+    if {$failed != 0} {
+        error "Generated WellTap overlap cleanup failed."
+    }
+
+    return $deleted
+}
+
+
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
+
+proc TT_proc_insert_ls_iso_welltap {} {
+
+    if {!$::ENABLE_LS_ISO_PRE_FILLER_WELLTAP} {
+        puts "INFO: LS/ISO pre-filler WellTap insertion is disabled."
+        return 0
+    }
+
+    if {![TT_lsiso_wt__ensure_generated_attribute]} {
+        error "Required custom attribute .tt_lsiso_generated is unavailable."
+    }
+
+    # Rebuild generated taps from clean state.
+    TT_proc_cleanup_ls_iso_welltaps
+
+    set tap_master $::LS_ISO_WELLTAP_MASTER
+    set site_name  $::LS_ISO_WELLTAP_SITE
+
+    if {[llength [get_db base_cells $tap_master]] == 0} {
+        error "Required WellTap master not found: $tap_master"
+    }
+
+    if {[llength [get_db sites $site_name]] == 0} {
+        error "Required site not found: $site_name"
+    }
+
+    set tap_bbox_master \
+        [TT_lsiso_wt__bbox4 \
+            [get_db base_cell:$tap_master .bbox]]
+
+    set site_size \
+        [TT_lsiso_wt__site_size2 \
+            [get_db site:$site_name .size]]
+
+    if {$tap_bbox_master eq "" || $site_size eq ""} {
+        error "Cannot resolve WellTap/site geometry."
+    }
+
+    lassign $tap_bbox_master \
+        tap_llx tap_lly tap_urx tap_ury
+
+    lassign $site_size \
+        site_w site_h
+
+    set tap_w [expr {$tap_urx - $tap_llx}]
+    set tap_h [expr {$tap_ury - $tap_lly}]
+
+    set tap_sites [expr {
+        int(round($tap_w / $site_w))
+    }]
+
+    puts ""
+    puts "======================================================================"
+    puts " LS / ISO PRE-FILLER WELLTAP INSERTION"
+    puts "======================================================================"
+    puts "Version           : $::TT_LS_ISO_WELLTAP_VERSION"
+    puts "WellTap master    : $tap_master"
+    puts "Site size         : $site_w x $site_h"
+    puts "WellTap size      : $tap_w x $tap_h"
+    puts "WellTap width     : $tap_sites sites"
+    puts "ISO detection     : get_db <inst> .is_isolation"
+    puts "PD insertion      : add_well_taps -cell_interval <tap_width> -power_domain"
+    puts "======================================================================"
+
+    # -------------------------------------------------------------------------
+    # Collect original LS / ISO.
+    # -------------------------------------------------------------------------
+    catch {array unset special_kind}
+
+    lassign \
+        [TT_lsiso_wt__collect_special special_kind] \
+        ls_names \
+        iso_names
+
+    puts "Level Shifters    : [llength $ls_names]"
+    puts "Isolation Cells   : [llength $iso_names]"
+
+    if {[array size special_kind] == 0} {
+        puts "WARNING: No LS/ISO instances found."
+        return 0
+    }
+
+    # -------------------------------------------------------------------------
+    # Build physical row occupancy from all non-generated cells.
+    # -------------------------------------------------------------------------
+    catch {array unset row_items}
+
+    foreach inst [get_db insts] {
+
+        if {[TT_lsiso_wt__is_generated $inst]} {
+            continue
+        }
+
+        set status ""
+        catch {set status [get_db $inst .place_status]}
+
+        if {$status eq "unplaced"} {
+            continue
+        }
+
+        set bbox [TT_lsiso_wt__inst_bbox $inst]
+
+        if {$bbox eq ""} {
+            continue
+        }
+
+        lassign $bbox llx lly urx ury
+
+        if {$ury <= $lly} {
+            continue
+        }
+
+        set first_row [expr {
+            int(floor(($lly + 1.0e-6) / $site_h))
+        }]
+
+        set last_row [expr {
+            int(floor(($ury - 1.0e-6) / $site_h))
+        }]
+
+        set inst_name [TT_lsiso_wt__inst_name $inst]
+
+        if {$inst_name eq ""} {
+            continue
+        }
+
+        for {set rk $first_row} \
+            {$rk <= $last_row} \
+            {incr rk} {
+
+            lappend row_items($rk) \
+                [list $llx $urx $inst_name $inst]
+        }
+    }
+
+    # -------------------------------------------------------------------------
+    # Adjacent LS/ISO pair scan.
+    # -------------------------------------------------------------------------
+    catch {array unset processed_pair}
+
+    set pair_total      0
+    set gap_candidates  0
+    set inserted        0
+    set skip_gap        0
+    set skip_pd         0
+    set skip_duplicate  0
+    set insert_failed   0
+
+    foreach rk [lsort -integer [array names row_items]] {
+
+        set items [lsort -real -index 0 $row_items($rk)]
+        set n [llength $items]
+
+        if {$n < 2} {
+            continue
+        }
+
+        for {set i 0} \
+            {$i < ($n - 1)} \
+            {incr i} {
+
+            set a [lindex $items $i]
+            set b [lindex $items [expr {$i + 1}]]
+
+            lassign $a \
+                a_llx a_urx a_name a_inst
+
+            lassign $b \
+                b_llx b_urx b_name b_inst
+
+            if {![info exists special_kind($a_name)] ||
+                ![info exists special_kind($b_name)]} {
+                continue
+            }
+
+            set a_kind $special_kind($a_name)
+            set b_kind $special_kind($b_name)
+
+            incr pair_total
+
+            set pair_key "${a_name}|||${b_name}"
+
+            if {[info exists processed_pair($pair_key)]} {
+                incr skip_duplicate
+                continue
+            }
+
+            set processed_pair($pair_key) 1
+
+            set gap [expr {$b_llx - $a_urx}]
+
+            if {$gap < ($tap_w - 1.0e-6)} {
+                incr skip_gap
+                continue
+            }
+
+            set gap_sites [expr {
+                int(round($gap / $site_w))
+            }]
+
+            if {$gap_sites < $tap_sites} {
+                incr skip_gap
+                continue
+            }
+
+            # -------------------------------------------------------------
+            # PD comes ONLY from the two bounding LS / ISO DB objects.
+            # -------------------------------------------------------------
+            set a_pd [TT_lsiso_wt__inst_pd $a_inst]
+            set b_pd [TT_lsiso_wt__inst_pd $b_inst]
+
+            if {$a_pd eq "" ||
+                $b_pd eq "" ||
+                $a_pd ne $b_pd} {
+
+                puts [format \
+                    "SKIP PD  %-3s/%-3s %-45s <-> %-45s PD=%s/%s" \
+                    $a_kind \
+                    $b_kind \
+                    $a_name \
+                    $b_name \
+                    $a_pd \
+                    $b_pd]
+
+                incr skip_pd
+                continue
+            }
+
+            set target_pd $a_pd
+            incr gap_candidates
+
+            # Center one Welltap of library-derived $tap_sites span inside the available gap.
+            set extra_sites [expr {
+                $gap_sites - $tap_sites
+            }]
+
+            set left_extra_sites [expr {
+                int(floor($extra_sites / 2.0))
+            }]
+
+            set tap_x [expr {
+                $a_urx + ($left_extra_sites * $site_w)
+            }]
+
+            set a_bbox [TT_lsiso_wt__inst_bbox $a_inst]
+
+            lassign $a_bbox \
+                tmp_llx tap_y tmp_urx tmp_ury
+
+            set requested_bbox [list \
+                $tap_x \
+                $tap_y \
+                [expr {$tap_x + $tap_w}] \
+                [expr {$tap_y + $tap_h}]]
+
+            puts [format \
+                "INSERT %-3s/%-3s %-45s <-> %-45s gap=%0.3f (%d sites) PD=%s AREA={%0.3f %0.3f %0.3f %0.3f}" \
+                $a_kind \
+                $b_kind \
+                $a_name \
+                $b_name \
+                $gap \
+                $gap_sites \
+                $target_pd \
+                $tap_x \
+                $tap_y \
+                [expr {$tap_x + $tap_w}] \
+                [expr {$tap_y + $tap_h}]]
+
+            set new_tap \
+                [TT_lsiso_wt__native_insert_one \
+                    $requested_bbox \
+                    $target_pd]
+
+            if {$new_tap eq ""} {
+                incr insert_failed
+                continue
+            }
+
+            set new_name [TT_lsiso_wt__inst_name $new_tap]
+            set actual_pd [TT_lsiso_wt__inst_pd $new_tap]
+
+            puts "INFO: WellTap inserted: $new_name -> $actual_pd"
+
+            incr inserted
+        }
+    }
+
+    puts ""
+    puts "======================================================================"
+    puts " LS / ISO WELLTAP INSERTION SUMMARY"
+    puts "======================================================================"
+    puts "Level Shifters                  : [llength $ls_names]"
+    puts "Isolation Cells                 : [llength $iso_names]"
+    puts "Adjacent special pairs examined : $pair_total"
+    puts "Gap-fit / same-PD candidates    : $gap_candidates"
+    puts "Inserted WellTaps               : $inserted"
+    puts "Skipped: gap < $tap_sites sites          : $skip_gap"
+    puts "Skipped: PD empty/mismatch      : $skip_pd"
+    puts "Skipped: duplicate row pair     : $skip_duplicate"
+    puts "Insertion failures              : $insert_failed"
+    puts "======================================================================"
+
+    set overlap_deleted \
+        [TT_proc_cleanup_generated_welltap_overlaps]
+
+    puts "INFO: Generated WellTap overlap cleanup deleted $overlap_deleted instance(s)."
+
+    if {$::LS_ISO_WELLTAP_RUN_CHECK_PLACE &&
+        $inserted > 0} {
+
+        puts ""
+        puts "INFO: Running check_place after LS/ISO WellTap insertion."
+
+        if {[catch {check_place} err]} {
+            puts "WARNING: check_place returned an error:"
+            puts "         $err"
+        }
+    }
+
+    return $inserted
+}
+
+
+puts "INFO: TT_proc_insert_ls_iso_welltap_v8.tcl loaded."
+puts "INFO: VERSION = $::TT_LS_ISO_WELLTAP_VERSION"
+puts "INFO: Run: TT_proc_insert_ls_iso_welltap"

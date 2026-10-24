@@ -1,0 +1,160 @@
+####################### Frontend RTL design stage ######################
+#######################################
+#           Virtual Power Setting
+#######################################
+#upf_version 2.0
+create_supply_set WDT_source_power
+create_supply_set WDT_prim_PG
+create_supply_set WDT_retention
+create_supply_set WDT_isolation
+
+
+create_power_domain PD_WDT -elements {u_TOP/u_WDT_wrapper/u_WDT} \
+    -supply {default_retention WDT_retention} \
+    -supply {default_isolation WDT_isolation} \
+    -available_supplies {WDT_source_power}
+
+set_domain_supply_net PD_WDT \
+    -primary_power_net WDT_prim_PG.power \
+    -primary_ground_net WDT_prim_PG.ground
+
+
+# Shared ground (common ground reference)
+create_supply_set WDT_retention -function {ground WDT_source_power.ground } -update
+create_supply_set WDT_isolation -function {ground WDT_source_power.ground } -update
+create_supply_set WDT_prim_PG   -function {ground WDT_source_power.ground } -update
+associate_supply_set {WDT_source_power WDT_retention WDT_isolation}
+
+
+# Virtual power switch definition
+create_power_switch WDT_SW \
+    -domain PD_WDT \
+    -input_supply_port {TVDD WDT_source_power.power} \
+    -output_supply_port {VDD WDT_prim_PG.power} \
+    -control_port {NSLEEPIN u_TOP/u_WDT_wrapper/u_plug/WDT_ON} \
+    -on_state {ON_state TVDD {NSLEEPIN}} \
+    -off_state {OFF_state {!NSLEEPIN}}
+
+####################### When synthesizing ######################
+
+#######################################
+#           Update Virtual Power
+#######################################
+create_supply_set WDT_source_power \
+    -function {power VDD_LEVEL_02} \
+    -function {ground VSS} \
+    -update
+
+create_supply_set WDT_retention \
+    -function {power VDD_LEVEL_02} \
+    -update
+    #-function {ground WDT_source_power.ground } -update
+
+create_supply_set WDT_isolation \
+    -function {power VDD_LEVEL_02} \
+    -update
+    #-function {ground WDT_source_power.ground } -update
+
+
+add_power_state WDT_source_power -supply \
+    -state OC {-supply_expr { power == `{FULL_ON, 0.5, 0.6}}} \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+ #{OFF/FULL_ON, min_voltage, max_voltage}
+
+add_power_state WDT_retention -supply \
+    -state OC {-supply_expr { power == `{FULL_ON, 0.5, 0.6}}} \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+
+add_power_state WDT_isolation -supply \
+    -state OC {-supply_expr { power == `{FULL_ON, 0.5, 0.6}}} \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+
+add_power_state WDT_prim_PG -supply \
+    -state ON {-supply_expr { power == `{FULL_ON, 0.5, 0.6}}} \
+    -state OFF {-supply_expr { power == `{OFF}}} \
+    -state GND { -supply_expr { ground == `{FULL_ON, 0.0} } }
+
+create_pst WDT_PST -supplies \
+{WDT_source_power.power WDT_prim_PG.power WDT_source_power.ground}
+
+add_pst_state WDT_ON -pst WDT_PST \
+    -state {OC ON GND}
+
+add_pst_state WDT_OFF -pst WDT_PST \
+    -state {OC OFF GND}
+
+
+
+if {$syn_sim_option == 0} {
+# set_isolation IS_WDT -domain PD_WDT -isolation_supply WDT_isolation -isolation_signal u_TOP/u_WDT_wrapper/u_plug/WDT_ISO -isolation_sense high -location self -clamp_value 0 -applies_to outputs
+# set_retention RT_WDT -domain PD_WDT -elements { u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_12_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_8_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_18_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_21_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_17_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_25_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_29_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_16_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_10_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_2_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_4_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_0_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_11_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_26_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_19_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_27_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_7_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_15_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_23_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_6_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_3_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_30_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_1_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_13_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_9_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_31_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_24_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_5_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_14_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_22_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_20_ u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt_reg_28_ } -applies_to any -retention_supply WDT_retention -save_signal {u_TOP/u_WDT_wrapper/n25 high} -restore_signal {u_TOP/u_WDT_wrapper/n24 low}
+# map_retention_cell RT_WDT -domain PD_WDT -lib_cells { FILL_IN_CELL_RETENTION_DFF_017 FILL_IN_CELL_RETENTION_DFF_018 FILL_IN_CELL_RETENTION_DFF_019 FILL_IN_CELL_RETENTION_DFF_020 FILL_IN_CELL_RETENTION_DFF_021 FILL_IN_CELL_RETENTION_DFF_022 FILL_IN_CELL_RETENTION_DFF_023 FILL_IN_CELL_RETENTION_DFF_024 FILL_IN_CELL_RETENTION_DFF_025 FILL_IN_CELL_RETENTION_DFF_026 FILL_IN_CELL_RETENTION_DFF_027 FILL_IN_CELL_RETENTION_DFF_028 }
+
+
+set_isolation IS_WDT -domain PD_WDT \
+    -isolation_supply WDT_isolation \
+    -clamp_value 0 \
+    -applies_to outputs \
+    -location parent \
+    -isolation_signal u_TOP/u_WDT_wrapper/u_plug/WDT_ISO \
+    -isolation_sense high
+
+
+
+set_retention RT_WDT -domain PD_WDT \
+    -retention_supply WDT_retention \
+    -save_signal {u_TOP/u_WDT_wrapper/u_plug/WDT_save_pulse high} \
+    -restore_signal {u_TOP/u_WDT_wrapper/u_plug/WDT_restore_pulse_n low} \
+    -elements {u_TOP/u_WDT_wrapper/u_WDT/cycle_cnt*}
+
+    #     -applies_to any \ innovus 不支援
+    # restore_signal must be a pulse signal
+    # '*' is used to avoid cell name mismatch after synthesis
+    # (registers are typically renamed with suffix like "_reg")
+    # It is recommended to place -elements at the end
+    # '*' may conflict with '\' in some cases
+
+map_retention_cell RT_WDT -domain PD_WDT \
+    -lib_cells { \
+        FILL_IN_CELL_RETENTION_DFF_017 \
+        FILL_IN_CELL_RETENTION_DFF_018 \
+        FILL_IN_CELL_RETENTION_DFF_019 \
+        FILL_IN_CELL_RETENTION_DFF_020 \
+        FILL_IN_CELL_RETENTION_DFF_021 \
+        FILL_IN_CELL_RETENTION_DFF_022 \
+        FILL_IN_CELL_RETENTION_DFF_023 \
+        FILL_IN_CELL_RETENTION_DFF_024 \
+        FILL_IN_CELL_RETENTION_DFF_025 \
+        FILL_IN_CELL_RETENTION_DFF_026 \
+        FILL_IN_CELL_RETENTION_DFF_027 \
+        FILL_IN_CELL_RETENTION_DFF_028 \
+    }
+
+map_power_switch WDT_SW \
+    -lib_cells { \
+        FILL_IN_CELL_POWER_SWITCH_029 \
+        FILL_IN_CELL_POWER_SWITCH_030 \
+        FILL_IN_CELL_POWER_SWITCH_031 \
+        FILL_IN_CELL_POWER_SWITCH_032 \
+        FILL_IN_CELL_POWER_SWITCH_033 \
+        FILL_IN_CELL_POWER_SWITCH_034 \
+        FILL_IN_CELL_POWER_SWITCH_035 \
+        FILL_IN_CELL_POWER_SWITCH_036 \
+        FILL_IN_CELL_POWER_SWITCH_037 \
+        FILL_IN_CELL_POWER_SWITCH_038 \
+        FILL_IN_CELL_POWER_SWITCH_039 \
+        FILL_IN_CELL_POWER_SWITCH_040 \
+    }
+
+
+}
+#    -domain PD_WDT \ innovus 不支援
+
+# Retention cells must be mapped, otherwise insertion will fail
+# map_isolation_cell
+# map_level_shifter_cell
+# map_power_switch
+# 找不到CELL 可能是加到TARGET 或 LINK 沒加好
+# Power Switch 不會implement 在 design Compiler
+# Both {} and `{} syntaxes are acceptable
+# `{} is the standard syntax

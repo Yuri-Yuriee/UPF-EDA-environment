@@ -1,0 +1,21 @@
+#modify clk period & edge{0 half clk period}, do not modify clk2
+
+current_design FIFO_TOP
+clock -name "FIFO_TOP.clk_in"   -domain clk_in  -tag clk_in  -period 1   -edge {0 0.5}
+clock -name "FIFO_TOP.clk_out"  -domain clk_out -tag clk_out -period 50  -edge {0 25}
+reset -name "FIFO_TOP.rst_n" -value 0 -async
+
+fifo -memory "FIFO_TOP.u_fifo.queue" \
+     -rd_data "FIFO_TOP.u_fifo.rdata"  \
+     -wr_data "FIFO_TOP.u_fifo.wdata"  \
+     -rd_ptr "FIFO_TOP.u_fifo.raddr_counter" \
+     -wr_ptr "FIFO_TOP.u_fifo.waddr_counter"
+
+#----------------------------------------------------------
+# Gray-code pointer declaration (DRAM / ROM FIFOs)
+#----------------------------------------------------------
+gray_signals -name "FIFO_TOP.u_fifo.sync_wptr_ff[1][4:0]"
+gray_signals -name "FIFO_TOP.u_fifo.sync_wptr_ff[1][4:0]"
+
+reset_filter_path -no_des_rst -type rdc
+

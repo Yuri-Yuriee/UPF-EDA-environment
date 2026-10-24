@@ -1,0 +1,52 @@
+current_design CHIP
+
+reset -name "CHIP.cpu_rst"  -value 1 -async
+reset -name "CHIP.axi_rst"  -value 1 -async
+reset -name "CHIP.rom_rst"  -value 1 -async
+reset -name "CHIP.dram_rst" -value 1 -async
+
+#reset_filter_path 
+#define_reset_order
+
+
+reset_filter_path -no_des_rst -type rdc
+
+
+# reset_filter_path -to_obj "CHIP.u_TOP.u_cpu.u_cpu.u_id.RF*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_cpu.u_cpu.u_id.F_RF*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_WDT_wrapper.u_plug.system_2_WDT_cdc.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_cpu.axi2cpu.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_cpu.cpu2axi.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_rom.u_cmd_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_rom.u_data_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_dram.u_aw_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_dram.u_ar_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_dram.u_r_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_dram.u_w_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_pmu.\gen_td_local[0].u_td_local .u_c2l_req_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_pmu.\gen_td_local[0].u_td_local .u_l2c_fifo.queue*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_pmu.u_center.u_dma.fifo_data*" -no_des_rst -type rdc
+# reset_filter_path -to_obj "CHIP.u_TOP.u_pmu.u_center.u_dma.fifo_last*" -no_des_rst -type rdc
+# quasi_static -name "CHIP.u_TOP.WDT_interrupt"  -value 0
+# quasi_static -name "CHIP.u_TOP.PLIC_interrupt" -value 0
+
+# fifo -memory "CHIP.u_TOP.u_WDT_wrapper.u_plug.system_2_WDT_cdc.queue" -rd_data "CHIP.u_TOP.u_WDT_wrapper.u_plug.system_2_WDT_cdc.rdata" -wr_data "CHIP.u_TOP.u_WDT_wrapper.u_plug.system_2_WDT_cdc.wdata" -rd_ptr "CHIP.u_TOP.u_WDT_wrapper.u_plug.system_2_WDT_cdc.raddr_counter" -wr_ptr "CHIP.u_TOP.u_WDT_wrapper.u_plug.system_2_WDT_cdc.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_cpu.axi2cpu.queue" -rd_data "CHIP.u_TOP.u_cpu.axi2cpu.rdata" -wr_data "CHIP.u_TOP.u_cpu.axi2cpu.wdata" -rd_ptr "CHIP.u_TOP.u_cpu.axi2cpu.raddr_counter" -wr_ptr "CHIP.u_TOP.u_cpu.axi2cpu.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_cpu.cpu2axi.queue" -rd_data "CHIP.u_TOP.u_cpu.cpu2axi.rdata" -wr_data "CHIP.u_TOP.u_cpu.cpu2axi.wdata" -rd_ptr "CHIP.u_TOP.u_cpu.cpu2axi.raddr_counter" -wr_ptr "CHIP.u_TOP.u_cpu.cpu2axi.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_rom.u_cmd_fifo.queue" -rd_data "CHIP.u_TOP.u_rom.u_cmd_fifo.rdata" -wr_data "CHIP.u_TOP.u_rom.u_cmd_fifo.wdata" -rd_ptr "CHIP.u_TOP.u_rom.u_cmd_fifo.raddr_counter" -wr_ptr "CHIP.u_TOP.u_rom.u_cmd_fifo.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_rom.u_data_fifo.queue" -rd_data "CHIP.u_TOP.u_rom.u_data_fifo.rdata" -wr_data "CHIP.u_TOP.u_rom.u_data_fifo.wdata" -rd_ptr "CHIP.u_TOP.u_rom.u_data_fifo.raddr_counter" -wr_ptr "CHIP.u_TOP.u_rom.u_data_fifo.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_dram.u_aw_fifo.queue" -rd_data "CHIP.u_TOP.u_dram.u_aw_fifo.rdata" -wr_data "CHIP.u_TOP.u_dram.u_aw_fifo.wdata" -rd_ptr "CHIP.u_TOP.u_dram.u_aw_fifo.raddr_counter" -wr_ptr "CHIP.u_TOP.u_dram.u_aw_fifo.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_dram.u_ar_fifo.queue" -rd_data "CHIP.u_TOP.u_dram.u_ar_fifo.rdata" -wr_data "CHIP.u_TOP.u_dram.u_ar_fifo.wdata" -rd_ptr "CHIP.u_TOP.u_dram.u_ar_fifo.raddr_counter" -wr_ptr "CHIP.u_TOP.u_dram.u_ar_fifo.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_dram.u_r_fifo.queue" -rd_data "CHIP.u_TOP.u_dram.u_r_fifo.rdata" -wr_data "CHIP.u_TOP.u_dram.u_r_fifo.wdata" -rd_ptr "CHIP.u_TOP.u_dram.u_r_fifo.raddr_counter" -wr_ptr "CHIP.u_TOP.u_dram.u_r_fifo.waddr_counter"
+# fifo -memory "CHIP.u_TOP.u_dram.u_w_fifo.queue" -rd_data "CHIP.u_TOP.u_dram.u_w_fifo.rdata" -wr_data "CHIP.u_TOP.u_dram.u_w_fifo.wdata" -rd_ptr "CHIP.u_TOP.u_dram.u_w_fifo.raddr_counter" -wr_ptr "CHIP.u_TOP.u_dram.u_w_fifo.waddr_counter"
+# # fifo -memory "CHIP.u_TOP.u_dram.u_b_fifo.queue" -rd_data "CHIP.u_TOP.u_dram.u_b_fifo.rdata" -wr_data "CHIP.u_TOP.u_dram.u_b_fifo.wdata" -rd_ptr "CHIP.u_TOP.u_dram.u_b_fifo.raddr_counter" -wr_ptr "CHIP.u_TOP.u_dram.u_b_fifo.waddr_counter"
+
+# #----------------------------------------------------------
+# # Gray-code pointer declarations: CPU FIFOs
+# #----------------------------------------------------------
+
+# gray_signals -name "CHIP.u_TOP.u_cpu.axi2cpu.dff0_wptr[4:0]"
+# gray_signals -name "CHIP.u_TOP.u_cpu.axi2cpu.dff0_rptr[4:0]"
+
+# gray_signals -name "CHIP.u_TOP.u_cpu.cpu2axi.dff0_wptr[4:0]"
+# gray_signals -name "CHIP.u_TOP.u_cpu.cpu2axi.dff0_rptr[4:0]"

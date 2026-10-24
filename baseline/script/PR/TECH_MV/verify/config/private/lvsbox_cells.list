@@ -1,0 +1,12 @@
+# =============================================================================
+# TECH_MV explicit LVS BOX cell list
+# =============================================================================
+# One exact cell name per line.  Blank lines and lines beginning with # are
+# ignored.
+#
+# IMPORTANT:
+#   Do NOT mirror the complete HCELL list here.
+#   Add only macros/IPs that intentionally must be black-boxed for LVS.
+#
+# Current safe/debug default: no LVS BOX cells.
+# =============================================================================
